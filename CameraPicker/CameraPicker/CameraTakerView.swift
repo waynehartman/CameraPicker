@@ -48,6 +48,9 @@ internal class CameraTakerView : UIView {
         self.layer.insertSublayer(self.cameraController.previewLayer, at: 0)
 
         self.clipsToBounds = true
+
+        let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(didTap(sender:)))
+        self.addGestureRecognizer(tapRecognizer)
     }
 
     override internal func layoutSubviews() {
@@ -81,5 +84,11 @@ internal class CameraTakerView : UIView {
     
     @objc private func flipCamera(sender: Any) {
         self.cameraController.toggleCamera()
+    }
+    
+    @objc private func didTap(sender: UITapGestureRecognizer) {
+        let touchPoint = sender.location(in: self)
+
+        self.cameraController.focus(at: touchPoint)
     }
 }

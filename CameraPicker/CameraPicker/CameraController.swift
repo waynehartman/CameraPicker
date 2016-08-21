@@ -133,8 +133,22 @@ internal class CameraController: NSObject {
             updateConnection(connection, deviceOrientation)
         }
     }
-    
-    
+
+    internal func focus(at point: CGPoint) {
+        if let camera = self.currentCamera {
+            let focusPoint = CGPoint(x: point.x / self.previewLayer.frame.size.width,
+                                     y: point.y / self.previewLayer.frame.size.height)
+
+            do {
+                try camera.lockForConfiguration()
+                camera.focusPointOfInterest = focusPoint
+                camera.unlockForConfiguration()
+            } catch {
+                
+            }
+        }
+    }
+
     // MARK: Private Methods
     private func connectCurrentDevice() {
         guard let currentCamera = self.currentCamera else {
