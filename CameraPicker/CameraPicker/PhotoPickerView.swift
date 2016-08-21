@@ -189,6 +189,7 @@ public class CameraPickerView : UIView {
     // MARK: Properties
     fileprivate var collectionView: UICollectionView!
     fileprivate var photos = PHFetchResult<PHAsset>()
+
     public var pickerItems = [PickerItem]() {
         didSet {
             let indexSet = IndexSet([CameraPickerSection.pickerItems.rawValue])
@@ -435,7 +436,7 @@ extension CameraPickerView : UICollectionViewDelegateFlowLayout {
             let combinedInsets = Double(insets.top) + Double(insets.bottom) + Double(contentInsets.top) + Double(contentInsets.bottom)
             let computedHeight = floor(cvHeight - combinedInsets - Double(itemSpacing) - lineSpacing)
 
-            let ratio = 0.75
+            let ratio = 0.825
             let width = ceil(ratio * Double(computedHeight))
 
             return CGSize(width: width, height: cvHeight)
@@ -445,16 +446,17 @@ extension CameraPickerView : UICollectionViewDelegateFlowLayout {
     public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
         let pickerSection = CameraPickerSection.init(rawValue: section)!
         
+        var inset: CGFloat = 0.0
+
         switch pickerSection {
         case .pickerItems:
-            let inset = CGFloat(20.0)
-            let insets = UIEdgeInsetsMake(inset, inset, inset, inset)
-            return insets
+            inset = CGFloat(20.0)
         case .camera, .photoLibrary:
-            let inset = CGFloat(2.0)
-            let insets = UIEdgeInsetsMake(inset, inset, inset, inset)
-            return insets
+            inset = CGFloat(2.0)
         }
+
+        let insets = UIEdgeInsetsMake(inset, inset, inset, inset)
+        return insets
     }
     
     public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {

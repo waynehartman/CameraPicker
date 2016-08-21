@@ -12,6 +12,11 @@ import CameraPicker
 class ViewController: UIViewController {
     @IBOutlet var cameraPicker: CameraPicker.CameraPickerView!
     @IBOutlet var imageView: UIImageView!
+    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
+        get {
+            return .all
+        }
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()

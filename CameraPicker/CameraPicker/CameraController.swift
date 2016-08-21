@@ -15,6 +15,7 @@ internal class CameraController: NSObject {
 
     //  Internal vars
     internal var previewLayer: AVCaptureVideoPreviewLayer
+    internal var previewAspectRatio = CGSize(width: 0, height: 0)
     internal var hasBackCamera: Bool {
         get {
             return self.backCamera != nil
@@ -50,9 +51,7 @@ internal class CameraController: NSObject {
     internal func takePhoto(completion: CameraControllerCaptureHandler) {
         let connection = self.stillImageOutput.connection(withMediaType: AVMediaTypeVideo)
         let deviceOrientation = UIDevice.current.orientation
-        let connectionOrientation = connection?.videoOrientation
 
-        
         self.stillImageOutput.captureStillImageAsynchronously(from: connection, completionHandler:{ (sampleBuffer: CMSampleBuffer?, error: Error?) in
             guard let buffer = sampleBuffer else {
                 completion(nil, error)
@@ -64,32 +63,23 @@ internal class CameraController: NSObject {
                 
                 switch (deviceOrientation) {
                 case .portrait:
-                    imageOrientation = .up
-                case .portraitUpsideDown:
-                    imageOrientation = .down
-                case .landscapeLeft:
-                    imageOrientation = .left
-                case .landscapeRight:
                     imageOrientation = .right
+                case .portraitUpsideDown:
+                    imageOrientation = .left
+                case .landscapeLeft:
+                    imageOrientation = .up
+                case .landscapeRight:
+                    imageOrientation = .down
                 default:
                     imageOrientation = .right
                 }
                 
                 let imageData = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(buffer) as CFData
                 let dataProvider = CGDataProvider(data: imageData)
-                
-                let ciImage = CIImage(data: imageData as Data)
-                var metadata = ciImage?.properties
-                
-                metadata?["Orientation"] = deviceOrientation.rawValue
-                
-                let newImage = CIImage(data: imageData as Data, options: metadata)
-                
-                //                let cgImageRef = CGImage(jpegDataProviderSource: dataProvider!, decode: nil, shouldInterpolate: true, intent: .defaultIntent)
-                //                let image = UIImage(cgImage: cgImageRef!, scale: 1.0, orientation: imageOrientation)
-                
-                let image = UIImage(ciImage: newImage!, scale: 1.0, orientation: .right)
-                
+
+                let cgImageRef = CGImage(jpegDataProviderSource: dataProvider!, decode: nil, shouldInterpolate: true, intent: .defaultIntent)
+                let image = UIImage(cgImage: cgImageRef!, scale: 1.0, orientation: imageOrientation)
+
                 completion(image, nil)
             })
         })
@@ -105,33 +95,43 @@ internal class CameraController: NSObject {
     }
     
     private func updatePreviewOrientation() {
-        if !self.previewLayer.connection.isVideoOrientationSupported {
-            return;
-        }
-        
         let deviceOrientation = UIDevice.current.orientation
-        var previewOrientation = self.previewLayer.connection.videoOrientation
-        
-        switch (deviceOrientation) {
-        case .portrait:
-            previewOrientation = .portrait
-            break
-        case .portraitUpsideDown:
-            previewOrientation = .portraitUpsideDown
-            break
-        case .landscapeLeft:
-            previewOrientation = .landscapeRight
-            break
-        case .landscapeRight:
-            previewOrientation = .landscapeLeft
-            break
-        default :
-            previewOrientation = .portrait
-            break
-            
+
+        let updateConnection = {(connection: AVCaptureConnection, deviceOrientation: UIDeviceOrientation)  in
+            let isOrientationSupported = connection.isVideoOrientationSupported
+            if !isOrientationSupported {
+                return;
+            }
+
+            var connectionOrientation = connection.videoOrientation
+
+            switch (deviceOrientation) {
+            case .portrait:
+                connectionOrientation = .portrait
+                break
+            case .portraitUpsideDown:
+                connectionOrientation = .portraitUpsideDown
+                break
+            case .landscapeLeft:
+                connectionOrientation = .landscapeRight
+                break
+            case .landscapeRight:
+                connectionOrientation = .landscapeLeft
+                break
+            default :
+                break
+            }
+
+            connection.videoOrientation = connectionOrientation
+        }
+
+        if let connection = self.stillImageOutput.connection(withMediaType: AVMediaTypeVideo) {
+            updateConnection(connection, deviceOrientation)
         }
         
-        self.previewLayer.connection.videoOrientation = previewOrientation
+        if let connection = self.previewLayer.connection {
+            updateConnection(connection, deviceOrientation)
+        }
     }
     
     
@@ -140,24 +140,29 @@ internal class CameraController: NSObject {
         guard let currentCamera = self.currentCamera else {
             return
         }
-        
+
         do {
             for existingInput in self.session.inputs {
                 if let input = existingInput as? AVCaptureDeviceInput {
                     self.session.removeInput(input)
                 }
             }
-            
+
             let input = try AVCaptureDeviceInput(device: currentCamera)
-            
+
             self.session.addInput(input)
-            
+
             if self.session.outputs.count == 0 {
                 self.session.addOutput(self.stillImageOutput)
             }
-            
-            self.previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill
+
+            self.previewLayer.videoGravity = AVLayerVideoGravityResizeAspect
             //            self.previewLayer.connection.videoOrientation = .portrait
+
+            if let camera = self.currentCamera {
+                let dimensions = CMVideoFormatDescriptionGetDimensions(camera.activeFormat.formatDescription);
+                self.previewAspectRatio = CGSize(width: Int(dimensions.width), height: Int(dimensions.height))
+            }
         } catch {
             print("error making connection:\(error)")
         }

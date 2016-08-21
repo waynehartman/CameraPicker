@@ -13,6 +13,11 @@ internal typealias CameraTakerViewCaptureHandler = (UIImage?, Error?) -> (Void)
 
 internal class CameraTakerView : UIView {
     internal var captureHandler: CameraTakerViewCaptureHandler?
+    internal var previewAspectRatio: CGSize {
+        get {
+            return self.cameraController.previewAspectRatio
+        }
+    }
 
     @IBOutlet private var takeButton: UIButton! = UIButton(frame: CGRect(x: 0.0, y: 0.0, width: 44.0, height: 44.0))
     @IBOutlet private var flipButton: UIButton! = UIButton(frame: CGRect(x: 0.0, y: 0.0, width: 44.0, height: 44.0))
