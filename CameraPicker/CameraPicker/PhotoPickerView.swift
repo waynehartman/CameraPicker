@@ -65,9 +65,9 @@ fileprivate enum CameraPickerCellIdentifiers : String {
 }
 
 fileprivate class PickerItemCell : UICollectionViewCell {
-    var titleLabel: UILabel!
-    var imageView: UIImageView!
-    var stackView: UIStackView!
+    @IBOutlet var titleLabel: UILabel!
+    @IBOutlet var imageView: UIImageView!
+    @IBOutlet var stackView: UIStackView!
 
     var pickerItem: PickerItem? {
         didSet {
@@ -80,13 +80,18 @@ fileprivate class PickerItemCell : UICollectionViewCell {
 
         self.tintColor = UIColor.black
 
-        self.titleLabel = UILabel()
-        self.titleLabel.textAlignment = .center
-        self.titleLabel.font = UIFont.systemFont(ofSize: 14.0)
+        let label = UILabel()
+        label.textAlignment = .center
+        label.font = UIFont.systemFont(ofSize: 14.0)
+        label.numberOfLines = 2
 
-        self.imageView = UIImageView()
-        self.imageView.contentMode = .center
-        self.imageView.backgroundColor = UIColor.clear
+        self.titleLabel = label
+
+        let imageView = UIImageView()
+        imageView.contentMode = .center
+        imageView.backgroundColor = UIColor.clear
+
+        self.imageView = imageView
 
         self.stackView = UIStackView(arrangedSubviews: [self.imageView, self.titleLabel])
         self.stackView.axis = .vertical
@@ -100,7 +105,12 @@ fileprivate class PickerItemCell : UICollectionViewCell {
     
     override func layoutSubviews() {
         super.layoutSubviews()
-        self.stackView.frame = self.contentView.bounds
+
+        let margin = CGFloat(15.0)
+        let insets = UIEdgeInsetsMake(margin, margin, margin, margin)
+        let stackViewRect = UIEdgeInsetsInsetRect(self.bounds, insets)
+
+        self.stackView.frame = stackViewRect
     }
 
     private func updateUI() {
@@ -147,6 +157,7 @@ fileprivate class PhotoCell : UICollectionViewCell {
             let imageViewSize = self.imageView.frame.size
             let size = CGSize(width: imageViewSize.width * scale, height: imageViewSize.height * scale)
             let photoId = self.asset!.localIdentifier
+            self.imageView.image = nil
 
             PHImageManager.default().requestImage(for: asset, targetSize: size, contentMode: .aspectFill, options: options) { result, info in
                 if result != nil && self.asset!.localIdentifier == photoId {
@@ -187,18 +198,21 @@ fileprivate class CameraCell : UICollectionViewCell {
 
 public class CameraPickerView : UIView {
     // MARK: Properties
-    fileprivate var collectionView: UICollectionView!
-    fileprivate var photos = PHFetchResult<PHAsset>()
-
     public var pickerItems = [PickerItem]() {
         didSet {
-            let indexSet = IndexSet([CameraPickerSection.pickerItems.rawValue])
-            self.collectionView.reloadSections(indexSet)
+//            let indexSet = IndexSet([CameraPickerSection.pickerItems.rawValue])
+//            self.collectionView.reloadSections(indexSet)
+            self.collectionView.reloadData()
         }
     }
     public var imageSelectionHandler: CameraPickerImageSelectionHandler?
+    
+    fileprivate var collectionView: UICollectionView!
+    fileprivate var photos = PHFetchResult<PHAsset>()
+
     private var isCameraAvailable = false
     private var photoSize = CGSize(width: 200.0, height: 200.0)
+    private var hasPerformedInitialOffset = false
 
     required public init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
@@ -221,6 +235,23 @@ public class CameraPickerView : UIView {
         }
 
         self.collectionView.frame = self.bounds
+        
+        if !self.hasPerformedInitialOffset {
+            self.hasPerformedInitialOffset = true
+            
+            if self.isCameraAccessible() {
+                //TODO: Need to figure out why this doesn't work...
+                let section = CameraPickerSection.camera.rawValue
+                let cameraIndexPath = IndexPath(item: 0, section: section)
+                self.collectionView.scrollToItem(at: cameraIndexPath, at: .left, animated: false)
+                
+                var offset = self.collectionView.contentOffset
+                let margin: CGFloat = 2.0
+                offset = CGPoint(x: offset.x - margin , y: offset.y)
+
+                self.collectionView.contentOffset = offset
+            }
+        }
     }
 
     override public func willMove(toWindow newWindow: UIWindow?) {
@@ -281,7 +312,6 @@ public class CameraPickerView : UIView {
         if self.collectionView == nil {
             let layout = UICollectionViewFlowLayout()
             layout.scrollDirection = .horizontal
-//            layout.minimumInteritemSpacing = 2.0
 
             self.collectionView = UICollectionView(frame: self.bounds, collectionViewLayout: layout)
             self.collectionView.backgroundColor = UIColor.clear
@@ -353,7 +383,7 @@ extension CameraPickerView: UICollectionViewDelegate {
 /* ------------------------------------------------------------------------------------------------ */
 
 extension CameraPickerView : UICollectionViewDataSource {
-
+ 
     public func numberOfSections(in collectionView: UICollectionView) -> Int {
         return CameraPickerSection.photoLibrary.rawValue + 1
     }
@@ -369,7 +399,7 @@ extension CameraPickerView : UICollectionViewDataSource {
         case .camera:
             return self.isCameraAccessible() ? 1 : 0
         case .photoLibrary:
-            return self.photos.count
+            return self.isPhotoLibraryAccessible() ? self.photos.count : 0
         }
         
     }
@@ -418,12 +448,12 @@ extension CameraPickerView : UICollectionViewDelegateFlowLayout {
 
         switch pickerSection {
         case .pickerItems:
-            let itemSpacing = itemSpacing * 2.0
-            
             let combinedInsets = Double(insets.top) + Double(insets.bottom)
-            let computedHeight = floor((cvHeight - combinedInsets - itemSpacing - lineSpacing) * 0.5)
-            
-            return CGSize(width: computedHeight, height: computedHeight)
+            let computedHeight = floor((cvHeight - combinedInsets - itemSpacing) * 0.5)
+            let ratio = 1.25
+            let computedWidth = computedHeight * ratio
+
+            return CGSize(width: computedWidth, height: computedHeight)
         case .photoLibrary:
             let itemSpacing = itemSpacing * 2.0
             
@@ -436,10 +466,10 @@ extension CameraPickerView : UICollectionViewDelegateFlowLayout {
             let combinedInsets = Double(insets.top) + Double(insets.bottom) + Double(contentInsets.top) + Double(contentInsets.bottom)
             let computedHeight = floor(cvHeight - combinedInsets - Double(itemSpacing) - lineSpacing)
 
-            let ratio = 0.825
+            let ratio = 0.820
             let width = ceil(ratio * Double(computedHeight))
 
-            return CGSize(width: width, height: cvHeight)
+            return CGSize(width: width, height: cvHeight - 4.0)
         }
     }
 
@@ -488,59 +518,52 @@ extension CameraPickerView : UICollectionViewDelegateFlowLayout {
 
 extension CameraPickerView : PHPhotoLibraryChangeObserver {
     public func photoLibraryDidChange(_ changeInstance: PHChange) {
-        if !Thread.isMainThread {
-            DispatchQueue.main.async(execute: {
-                print("Dispatching to main queue to handle `photoLibraryDidChange`")
-                self.photoLibraryDidChange(changeInstance)
-            });
-            return;
-        }
+        DispatchQueue.main.async(execute: {
+            if let collectionChanges = changeInstance.changeDetails(for: self.photos) {
+                self.photos = collectionChanges.fetchResultAfterChanges
+                let collectionView = self.collectionView!
 
-        if let collectionChanges = changeInstance.changeDetails(for: self.photos) {
-            self.photos = collectionChanges.fetchResultAfterChanges
-            let collectionView = self.collectionView!
-            
-            if !collectionChanges.hasIncrementalChanges || collectionChanges.hasMoves {
-                collectionView.reloadData()
+                if !collectionChanges.hasIncrementalChanges || collectionChanges.hasMoves {
+                    collectionView.reloadData()
+                } else {
+                    let toIndexPaths = {(indexSet: IndexSet, section: Int) -> ([IndexPath]) in
+                        var indexPaths = [IndexPath]()
+                        for index in indexSet.enumerated() {
+                            let indexPath = IndexPath(item: index.offset, section: section)
+                            indexPaths.append(indexPath)
+                        }
+
+                        return indexPaths
+                    }
+
+                    let batchUpdates = {
+                        let section = CameraPickerSection.photoLibrary.rawValue
+
+                        if let removedIndexes = collectionChanges.removedIndexes {
+                            if removedIndexes.count > 0 {
+                                collectionView.deleteItems(at: toIndexPaths(removedIndexes, section))
+                            }
+                        }
+
+                        if let insertedIndexes = collectionChanges.insertedIndexes {
+                            if insertedIndexes.count > 0 {
+                                collectionView.insertItems(at: toIndexPaths(insertedIndexes, section))
+                            }
+                        }
+
+                        if let changedIndexes = collectionChanges.changedIndexes {
+                            if changedIndexes.count > 0 {
+                                collectionView.reloadItems(at: toIndexPaths(changedIndexes, section))
+                            }
+                        }
+                    }
+
+                    collectionView.performBatchUpdates(batchUpdates, completion: nil)
+                }
             } else {
-                let toIndexPaths = {(indexSet: IndexSet, section: Int) -> ([IndexPath]) in
-                    var indexPaths = [IndexPath]()
-                    for index in indexSet.enumerated() {
-                        let indexPath = IndexPath(item: index.offset, section: section)
-                        indexPaths.append(indexPath)
-                    }
-
-                    return indexPaths
-                }
-
-                let batchUpdates = {
-                    let section = CameraPickerSection.photoLibrary.rawValue
-
-                    if let removedIndexes = collectionChanges.removedIndexes {
-                        if removedIndexes.count > 0 {
-                            collectionView.deleteItems(at: toIndexPaths(removedIndexes, section))
-                        }
-                    }
-                    
-                    if let insertedIndexes = collectionChanges.insertedIndexes {
-                        if insertedIndexes.count > 0 {
-                            collectionView.insertItems(at: toIndexPaths(insertedIndexes, section))
-                        }
-                    }
-
-                    if let changedIndexes = collectionChanges.changedIndexes {
-                        if changedIndexes.count > 0 {
-                            collectionView.reloadItems(at: toIndexPaths(changedIndexes, section))
-                        }
-                    }
-                }
-                
-                collectionView.performBatchUpdates(batchUpdates, completion: nil)
-                
+                print("change notification of photos, but there weren't any changes...")
             }
-        } else {
-            print("change notification of photos, but there weren't any changes...")
-        }
+        })
     }
 }
 

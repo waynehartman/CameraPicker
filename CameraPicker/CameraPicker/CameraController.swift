@@ -136,6 +136,10 @@ internal class CameraController: NSObject {
 
     internal func focus(at point: CGPoint) {
         if let camera = self.currentCamera {
+            guard camera.isFocusPointOfInterestSupported else {
+                return
+            }
+
             let focusPoint = CGPoint(x: point.x / self.previewLayer.frame.size.width,
                                      y: point.y / self.previewLayer.frame.size.height)
 
