@@ -319,7 +319,7 @@ public class CameraPickerView : UIView {
             self.collectionView.delegate = self
             self.collectionView.alwaysBounceHorizontal = true
             self.collectionView.showsHorizontalScrollIndicator = false
-            
+
             self.addSubview(self.collectionView)
             self.collectionView.frame = self.bounds
         }
@@ -399,7 +399,11 @@ extension CameraPickerView : UICollectionViewDataSource {
         case .camera:
             return self.isCameraAccessible() ? 1 : 0
         case .photoLibrary:
-            return self.isPhotoLibraryAccessible() ? self.photos.count : 0
+            guard self.isPhotoLibraryAccessible() else {
+                return 0
+            }
+
+            return photos.count
         }
         
     }
@@ -518,8 +522,9 @@ extension CameraPickerView : UICollectionViewDelegateFlowLayout {
 
 extension CameraPickerView : PHPhotoLibraryChangeObserver {
     public func photoLibraryDidChange(_ changeInstance: PHChange) {
-        DispatchQueue.main.async(execute: {
-            if let collectionChanges = changeInstance.changeDetails(for: self.photos) {
+
+        if let collectionChanges = changeInstance.changeDetails(for: self.photos) {
+            DispatchQueue.main.async(execute: {
                 self.photos = collectionChanges.fetchResultAfterChanges
                 let collectionView = self.collectionView!
 
@@ -528,42 +533,41 @@ extension CameraPickerView : PHPhotoLibraryChangeObserver {
                 } else {
                     let toIndexPaths = {(indexSet: IndexSet, section: Int) -> ([IndexPath]) in
                         var indexPaths = [IndexPath]()
+
                         for index in indexSet.enumerated() {
-                            let indexPath = IndexPath(item: index.offset, section: section)
+                            let indexPath = IndexPath(item: index.element, section: section)
                             indexPaths.append(indexPath)
                         }
 
                         return indexPaths
                     }
 
+                    let section = CameraPickerSection.photoLibrary.rawValue
+
                     let batchUpdates = {
-                        let section = CameraPickerSection.photoLibrary.rawValue
-
-                        if let removedIndexes = collectionChanges.removedIndexes {
-                            if removedIndexes.count > 0 {
-                                collectionView.deleteItems(at: toIndexPaths(removedIndexes, section))
-                            }
+                        if let removedIndexes = collectionChanges.removedIndexes, removedIndexes.count > 0 {
+                            let indexPaths = toIndexPaths(removedIndexes, section)
+                            collectionView.deleteItems(at: indexPaths)
                         }
 
-                        if let insertedIndexes = collectionChanges.insertedIndexes {
-                            if insertedIndexes.count > 0 {
-                                collectionView.insertItems(at: toIndexPaths(insertedIndexes, section))
-                            }
-                        }
-
-                        if let changedIndexes = collectionChanges.changedIndexes {
-                            if changedIndexes.count > 0 {
-                                collectionView.reloadItems(at: toIndexPaths(changedIndexes, section))
-                            }
+                        if let insertedIndexes = collectionChanges.insertedIndexes, insertedIndexes.count > 0 {
+                            let indexPaths = toIndexPaths(insertedIndexes, section)
+                            collectionView.insertItems(at: indexPaths)
                         }
                     }
 
                     collectionView.performBatchUpdates(batchUpdates, completion: nil)
+
+                    if let changedIndexes = collectionChanges.changedIndexes {
+                        if changedIndexes.count > 0 {
+                            collectionView.reloadItems(at: toIndexPaths(changedIndexes, section))
+                        }
+                    }
                 }
-            } else {
-                print("change notification of photos, but there weren't any changes...")
-            }
-        })
+            })
+        } else {
+            print("change notification of photos, but there weren't any changes...")
+        }
     }
 }
 
