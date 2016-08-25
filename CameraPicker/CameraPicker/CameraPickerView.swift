@@ -286,6 +286,7 @@ public class CameraPickerView : UIView {
 
     // MARK: Private Methods
     private func commonInit() {
+        self.backgroundColor = UIColor.init(white: 0.8, alpha: 1.0)
         self.registerCells()
         self.isCameraAvailable = self.isCameraAccessible()
 

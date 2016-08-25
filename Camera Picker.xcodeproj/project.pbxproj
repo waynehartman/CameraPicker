@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		B04BF9FF1D69EE4E003791FD /* CameraController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B04BF9FC1D69EE4E003791FD /* CameraController.swift */; };
-		B04BFA001D69EE4E003791FD /* PhotoPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B04BF9FD1D69EE4E003791FD /* PhotoPickerView.swift */; };
+		B04BFA001D69EE4E003791FD /* CameraPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B04BF9FD1D69EE4E003791FD /* CameraPickerView.swift */; };
 		B04BFA011D69EE4E003791FD /* CameraTakerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B04BF9FE1D69EE4E003791FD /* CameraTakerView.swift */; };
 		B04BFA021D69EE75003791FD /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = B04BFA041D69EE75003791FD /* Localizable.strings */; };
 		B06AFD6C1D69518B00D6D0D2 /* Media.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B06AFD6B1D69518B00D6D0D2 /* Media.xcassets */; };
@@ -20,6 +20,7 @@
 		B0BDDA6F1D68A88D006282CF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B0BDDA6D1D68A88D006282CF /* LaunchScreen.storyboard */; };
 		B0BDDA741D68A89D006282CF /* CameraPicker.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B0BDDA541D68A868006282CF /* CameraPicker.framework */; };
 		B0BDDA751D68A89D006282CF /* CameraPicker.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B0BDDA541D68A868006282CF /* CameraPicker.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		B0BF07C31D6E909000451993 /* CameraPickerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0BF07C21D6E909000451993 /* CameraPickerViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -48,7 +49,7 @@
 
 /* Begin PBXFileReference section */
 		B04BF9FC1D69EE4E003791FD /* CameraController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraController.swift; sourceTree = "<group>"; };
-		B04BF9FD1D69EE4E003791FD /* PhotoPickerView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhotoPickerView.swift; sourceTree = "<group>"; };
+		B04BF9FD1D69EE4E003791FD /* CameraPickerView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraPickerView.swift; sourceTree = "<group>"; };
 		B04BF9FE1D69EE4E003791FD /* CameraTakerView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraTakerView.swift; sourceTree = "<group>"; };
 		B04BFA031D69EE75003791FD /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Base; path = Base.lproj/Localizable.strings; sourceTree = "<group>"; };
 		B04BFA051D69EE7A003791FD /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -63,6 +64,7 @@
 		B0BDDA6B1D68A88D006282CF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B0BDDA6E1D68A88D006282CF /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		B0BDDA701D68A88D006282CF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B0BF07C21D6E909000451993 /* CameraPickerViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraPickerViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -88,8 +90,9 @@
 			isa = PBXGroup;
 			children = (
 				B04BF9FC1D69EE4E003791FD /* CameraController.swift */,
-				B04BF9FD1D69EE4E003791FD /* PhotoPickerView.swift */,
+				B04BF9FD1D69EE4E003791FD /* CameraPickerView.swift */,
 				B04BF9FE1D69EE4E003791FD /* CameraTakerView.swift */,
+				B0BF07C21D6E909000451993 /* CameraPickerViewController.swift */,
 			);
 			path = CameraPicker;
 			sourceTree = "<group>";
@@ -259,7 +262,8 @@
 			files = (
 				B04BFA011D69EE4E003791FD /* CameraTakerView.swift in Sources */,
 				B04BF9FF1D69EE4E003791FD /* CameraController.swift in Sources */,
-				B04BFA001D69EE4E003791FD /* PhotoPickerView.swift in Sources */,
+				B0BF07C31D6E909000451993 /* CameraPickerViewController.swift in Sources */,
+				B04BFA001D69EE4E003791FD /* CameraPickerView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
