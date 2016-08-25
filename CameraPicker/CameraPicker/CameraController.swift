@@ -16,6 +16,7 @@ internal class CameraController: NSObject {
     //  Internal vars
     internal var previewLayer: AVCaptureVideoPreviewLayer
     internal var previewAspectRatio = CGSize(width: 0, height: 0)
+    internal var currentCamera: AVCaptureDevice?
     internal var hasBackCamera: Bool {
         get {
             return self.backCamera != nil
@@ -27,7 +28,6 @@ internal class CameraController: NSObject {
     private let stillImageOutput = AVCaptureStillImageOutput() // Update this for iOS 10...
     private var frontCamera: AVCaptureDevice?
     private var backCamera: AVCaptureDevice?
-    private var currentCamera: AVCaptureDevice?
     
     override init() {
         self.session.sessionPreset = AVCaptureSessionPresetPhoto
@@ -67,9 +67,17 @@ internal class CameraController: NSObject {
                 case .portraitUpsideDown:
                     imageOrientation = .left
                 case .landscapeLeft:
-                    imageOrientation = .up
+                    if self.currentCamera == self.frontCamera {
+                        imageOrientation = .down
+                    } else {
+                        imageOrientation = .up
+                    }
                 case .landscapeRight:
-                    imageOrientation = .down
+                    if self.currentCamera == self.frontCamera {
+                        imageOrientation = .up
+                    } else {
+                        imageOrientation = .down
+                    }
                 default:
                     imageOrientation = .right
                 }
@@ -174,8 +182,7 @@ internal class CameraController: NSObject {
                 self.session.addOutput(self.stillImageOutput)
             }
 
-            self.previewLayer.videoGravity = AVLayerVideoGravityResizeAspect
-            //            self.previewLayer.connection.videoOrientation = .portrait
+            self.previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill
 
             if let camera = self.currentCamera {
                 let dimensions = CMVideoFormatDescriptionGetDimensions(camera.activeFormat.formatDescription);

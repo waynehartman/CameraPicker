@@ -11,11 +11,53 @@ import AVFoundation
 
 internal typealias CameraTakerViewCaptureHandler = (UIImage?, Error?) -> (Void)
 
+fileprivate class CameraPreviewView : UIView {
+    var previewLayer: AVCaptureVideoPreviewLayer!
+    var captureDevice: AVCaptureDevice? {
+        didSet {
+            self.invalidateIntrinsicContentSize()
+        }
+    }
+
+    class func cameraPreviewView(previewLayer: AVCaptureVideoPreviewLayer, device: AVCaptureDevice?) -> CameraPreviewView {
+        let previewView = CameraPreviewView(frame:previewLayer.bounds)
+        previewView.previewLayer = previewLayer
+        previewView.captureDevice = device
+
+        previewView.layer.addSublayer(previewLayer)
+
+        return previewView
+    }
+
+    override var intrinsicContentSize: CGSize {
+        get {
+            if let device = self.captureDevice {
+                let size = CMVideoFormatDescriptionGetDimensions(device.activeFormat.formatDescription)
+                return CGSize(width: CGFloat(size.width), height: CGFloat(size.height))
+            } else {
+                return self.previewLayer.frame.size
+            }
+        }
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+
+        self.previewLayer.frame = self.bounds
+    }
+}
+
 internal class CameraTakerView : UIView {
     internal var captureHandler: CameraTakerViewCaptureHandler?
     internal var previewAspectRatio: CGSize {
         get {
             return self.cameraController.previewAspectRatio
+        }
+    }
+
+    override var intrinsicContentSize: CGSize {
+        get {
+            return self.previewView.intrinsicContentSize
         }
     }
 
@@ -30,9 +72,8 @@ internal class CameraTakerView : UIView {
 
         self.backgroundColor = UIColor.black
 
-        let previewView = UIView(frame: self.bounds)
+        let previewView = CameraPreviewView.cameraPreviewView(previewLayer: self.cameraController.previewLayer, device: self.cameraController.currentCamera)
         previewView.backgroundColor = UIColor.clear
-        previewView.layer.addSublayer(self.cameraController.previewLayer)
         self.addSubview(previewView)
 
         self.previewView = previewView
@@ -65,10 +106,31 @@ internal class CameraTakerView : UIView {
         self.flipButton.isHidden = !self.cameraController.hasBackCamera
 
         if self.isManualLayout {
-            self.takeButton.center = CGPoint(x: self.frame.size.width * 0.5,
-                                             y: self.frame.size.height - (self.takeButton.frame.size.height * 0.5) - 4.0)
-            self.flipButton.center = CGPoint(x:self.frame.size.width - (self.flipButton.frame.size.width * 0.5),
-                                             y: (self.flipButton.frame.size.height * 0.5))
+            let width = self.frame.size.width
+            let height = self.frame.size.height
+
+            let isLandscape = height < width
+
+            let takeMargin: CGFloat = 4.0
+
+            var takeX = width * 0.5
+            var takeY = height - (self.takeButton.frame.size.height * 0.5) - takeMargin
+            
+            var flipX = width - (self.flipButton.frame.size.width * 0.5)
+            var flipY = (self.flipButton.frame.size.height * 0.5)
+
+            if isLandscape {
+                takeX = width - (self.takeButton.frame.size.width * 0.5) - takeMargin
+                takeY = height * 0.5
+
+                flipX = (self.flipButton.frame.size.width * 0.5)
+                flipY = (self.flipButton.frame.size.height * 0.5)
+            }
+
+            self.takeButton.center = CGPoint(x: takeX,
+                                             y: takeY)
+            self.flipButton.center = CGPoint(x: flipX,
+                                             y: flipY)
         }
 
         super.layoutSubviews()

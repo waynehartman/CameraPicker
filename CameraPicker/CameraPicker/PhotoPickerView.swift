@@ -209,6 +209,7 @@ public class CameraPickerView : UIView {
     
     fileprivate var collectionView: UICollectionView!
     fileprivate var photos = PHFetchResult<PHAsset>()
+    weak fileprivate var cameraTakerView: CameraTakerView?
 
     private var isCameraAvailable = false
     private var photoSize = CGSize(width: 200.0, height: 200.0)
@@ -235,16 +236,15 @@ public class CameraPickerView : UIView {
         }
 
         self.collectionView.frame = self.bounds
-        
+
         if !self.hasPerformedInitialOffset {
             self.hasPerformedInitialOffset = true
-            
+
             if self.isCameraAccessible() {
-                //TODO: Need to figure out why this doesn't work...
                 let section = CameraPickerSection.camera.rawValue
                 let cameraIndexPath = IndexPath(item: 0, section: section)
                 self.collectionView.scrollToItem(at: cameraIndexPath, at: .left, animated: false)
-                
+
                 var offset = self.collectionView.contentOffset
                 let margin: CGFloat = 2.0
                 offset = CGPoint(x: offset.x - margin , y: offset.y)
@@ -427,6 +427,9 @@ extension CameraPickerView : UICollectionViewDataSource {
                     handler(image)
                 }
             }
+
+            self.cameraTakerView = cameraCell.cameraTaker
+
             return cameraCell
         case .photoLibrary:
             let photoCell = collectionView.dequeueReusableCell(withReuseIdentifier: CameraPickerCellIdentifiers.photoLibrary.rawValue, for: indexPath) as! PhotoCell
@@ -469,8 +472,20 @@ extension CameraPickerView : UICollectionViewDelegateFlowLayout {
             let contentInsets = collectionView.contentInset
             let combinedInsets = Double(insets.top) + Double(insets.bottom) + Double(contentInsets.top) + Double(contentInsets.bottom)
             let computedHeight = floor(cvHeight - combinedInsets - Double(itemSpacing) - lineSpacing)
+            var ratio = 0.820 // Our sensible, magic number default
 
-            let ratio = 0.820
+            if let cameraTakerView = self.cameraTakerView {
+                let intrinsicSize = cameraTakerView.intrinsicContentSize
+
+                let isPortrait = UIDeviceOrientationIsPortrait(UIDevice.current.orientation)
+
+                if isPortrait {
+                    ratio = Double(intrinsicSize.height) / Double(intrinsicSize.width)
+                } else {
+                    ratio = Double(intrinsicSize.width) / Double(intrinsicSize.height)
+                }
+            }
+
             let width = ceil(ratio * Double(computedHeight))
 
             return CGSize(width: width, height: cvHeight - 4.0)
