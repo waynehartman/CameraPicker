@@ -36,7 +36,7 @@ public class CameraPickerViewController : UIViewController {
 
     override public func viewDidLoad() {
         super.viewDidLoad()
-        
+
         let cameraPickerItem = PickerItem.cameraPickerItem {
             let cameraPicker = UIImagePickerController()
             cameraPicker.sourceType = UIImagePickerControllerSourceType.camera
@@ -45,7 +45,7 @@ public class CameraPickerViewController : UIViewController {
 
             self.present(cameraPicker, animated: true, completion: nil)
         }
-        
+
         let photoPickerItem = PickerItem.photoLibraryPickerItem {
             let cameraPicker = UIImagePickerController()
             cameraPicker.sourceType = UIImagePickerControllerSourceType.photoLibrary
@@ -75,12 +75,6 @@ public class CameraPickerViewController : UIViewController {
         self.view.addSubview(self.dismissView)
     }
 
-    override public func viewDidLayoutSubviews() {
-        
-
-        super.viewDidLayoutSubviews()
-    }
-    
     override public func viewWillLayoutSubviews() {
         if !isTransitioning {
             let pickerHeight: CGFloat = 253.0
@@ -195,12 +189,16 @@ extension CameraPickerViewController : UIImagePickerControllerDelegate, UINaviga
             imageHandler(image)
         }
         
-        self.dismiss(animated: true) {
-            self.presentingViewController!.dismiss(animated: true, completion:nil)
+        picker.presentingViewController?.dismiss(animated: true) {
+            if let vc = self.presentingViewController {
+                vc.dismiss(animated: true, completion:nil)
+            } else {
+                print("Uh oh!")
+            }
         }
     }
 
     public func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-        self.dismiss(animated: true, completion: nil)
+        picker.presentingViewController?.dismiss(animated: true, completion: nil)
     }
 }
