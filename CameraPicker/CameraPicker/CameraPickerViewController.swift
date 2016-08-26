@@ -34,30 +34,36 @@ public class CameraPickerViewController : UIViewController {
     fileprivate var isTransitioning = false
     fileprivate var dismissView: UIView!
 
+    deinit {
+        print("CameraPickerViewController destroyed")
+    }
+
     override public func viewDidLoad() {
         super.viewDidLoad()
 
+        weak var weakSelf = self
+        
         let cameraPickerItem = PickerItem.cameraPickerItem {
             let cameraPicker = UIImagePickerController()
             cameraPicker.sourceType = UIImagePickerControllerSourceType.camera
             cameraPicker.cameraCaptureMode = .photo
-            cameraPicker.delegate = self
+            cameraPicker.delegate = weakSelf
 
-            self.present(cameraPicker, animated: true, completion: nil)
+            weakSelf?.present(cameraPicker, animated: true, completion: nil)
         }
-
+        
         let photoPickerItem = PickerItem.photoLibraryPickerItem {
             let cameraPicker = UIImagePickerController()
             cameraPicker.sourceType = UIImagePickerControllerSourceType.photoLibrary
-            cameraPicker.delegate = self
+            cameraPicker.delegate = weakSelf
 
-            self.present(cameraPicker, animated: true, completion: nil)
+            weakSelf?.present(cameraPicker, animated: true, completion: nil)
         }
 
         self.pickerView.pickerItems.append(contentsOf: [cameraPickerItem, photoPickerItem])
         self.pickerView.imageSelectionHandler = {(image: UIImage?) in
-            if let imageHandler = self.imageSelectionHandler {
-                self.presentingViewController?.dismiss(animated: true, completion: { 
+            if let imageHandler = weakSelf?.imageSelectionHandler {
+                weakSelf?.presentingViewController?.dismiss(animated: true, completion: {
                     imageHandler(image)
                 })
             }
@@ -188,9 +194,11 @@ extension CameraPickerViewController : UIImagePickerControllerDelegate, UINaviga
         if let imageHandler = self.imageSelectionHandler {
             imageHandler(image)
         }
-        
+
+        weak var weakSelf = self
+
         picker.presentingViewController?.dismiss(animated: true) {
-            if let vc = self.presentingViewController {
+            if let vc = weakSelf?.presentingViewController {
                 vc.dismiss(animated: true, completion:nil)
             } else {
                 print("Uh oh!")

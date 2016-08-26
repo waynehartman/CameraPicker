@@ -99,6 +99,10 @@ internal class CameraTakerView : UIView {
         let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(didTap(sender:)))
         self.addGestureRecognizer(tapRecognizer)
     }
+    
+    deinit {
+        print("CameraTakerView destroyed")
+    }
 
     override internal func layoutSubviews() {
         self.previewView.frame = self.bounds

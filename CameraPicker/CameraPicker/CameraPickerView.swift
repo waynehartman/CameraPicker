@@ -159,9 +159,11 @@ fileprivate class PhotoCell : UICollectionViewCell {
             let photoId = self.asset!.localIdentifier
             self.imageView.image = nil
 
+            weak var weakSelf = self
+
             PHImageManager.default().requestImage(for: asset, targetSize: size, contentMode: .aspectFill, options: options) { result, info in
-                if result != nil && self.asset!.localIdentifier == photoId {
-                    self.imageView.image = result
+                if result != nil && weakSelf?.asset!.localIdentifier == photoId {
+                    weakSelf?.imageView.image = result
                 }
             }
         } else {
@@ -200,8 +202,6 @@ public class CameraPickerView : UIView {
     // MARK: Properties
     public var pickerItems = [PickerItem]() {
         didSet {
-//            let indexSet = IndexSet([CameraPickerSection.pickerItems.rawValue])
-//            self.collectionView.reloadSections(indexSet)
             self.collectionView.reloadData()
         }
     }
@@ -225,6 +225,10 @@ public class CameraPickerView : UIView {
         super.init(frame: frame)
 
         self.commonInit()
+    }
+    
+    deinit {
+        print("CameraPickerView destroyed")
     }
 
     // MARK: Super Overrides
@@ -273,10 +277,12 @@ public class CameraPickerView : UIView {
     }
     
     public func requestPhotoLibraryAccessIfNeeded() {
+        weak var weakSelf = self
+        
         if !self.isPhotoLibraryAccessible() {
             PHPhotoLibrary.requestAuthorization({ (status: PHAuthorizationStatus) in
                 if status == .authorized {
-                    self.refreshPhotos()
+                    weakSelf?.refreshPhotos()
                 }
             })
         } else {
@@ -422,9 +428,11 @@ extension CameraPickerView : UICollectionViewDataSource {
 
             return pickerItemCell
         case .camera:
+            weak var weakSelf = self
+            
             let cameraCell = collectionView.dequeueReusableCell(withReuseIdentifier: CameraPickerCellIdentifiers.camera.rawValue, for: indexPath) as! CameraCell
             cameraCell.cameraTaker.captureHandler = {(image: UIImage?, error: Error?) in
-                if let handler = self.imageSelectionHandler {
+                if let handler = weakSelf?.imageSelectionHandler {
                     handler(image)
                 }
             }
@@ -539,10 +547,12 @@ extension CameraPickerView : UICollectionViewDelegateFlowLayout {
 extension CameraPickerView : PHPhotoLibraryChangeObserver {
     public func photoLibraryDidChange(_ changeInstance: PHChange) {
 
+        weak var weakSelf = self
+
         if let collectionChanges = changeInstance.changeDetails(for: self.photos) {
             DispatchQueue.main.async(execute: {
-                self.photos = collectionChanges.fetchResultAfterChanges
-                let collectionView = self.collectionView!
+                weakSelf?.photos = collectionChanges.fetchResultAfterChanges
+                let collectionView = weakSelf!.collectionView!
 
                 if !collectionChanges.hasIncrementalChanges || collectionChanges.hasMoves {
                     collectionView.reloadData()

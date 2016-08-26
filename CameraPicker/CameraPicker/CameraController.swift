@@ -52,6 +52,8 @@ internal class CameraController: NSObject {
         let connection = self.stillImageOutput.connection(withMediaType: AVMediaTypeVideo)
         let deviceOrientation = UIDevice.current.orientation
 
+        weak var weakSelf = self
+
         self.stillImageOutput.captureStillImageAsynchronously(from: connection, completionHandler:{ (sampleBuffer: CMSampleBuffer?, error: Error?) in
             guard let buffer = sampleBuffer else {
                 completion(nil, error)
@@ -67,13 +69,13 @@ internal class CameraController: NSObject {
                 case .portraitUpsideDown:
                     imageOrientation = .left
                 case .landscapeLeft:
-                    if self.currentCamera == self.frontCamera {
+                    if weakSelf?.currentCamera == weakSelf?.frontCamera {
                         imageOrientation = .down
                     } else {
                         imageOrientation = .up
                     }
                 case .landscapeRight:
-                    if self.currentCamera == self.frontCamera {
+                    if weakSelf?.currentCamera == weakSelf?.frontCamera {
                         imageOrientation = .up
                     } else {
                         imageOrientation = .down
@@ -81,7 +83,7 @@ internal class CameraController: NSObject {
                 default:
                     imageOrientation = .right
                 }
-                
+
                 let imageData = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(buffer) as CFData
                 let dataProvider = CGDataProvider(data: imageData)
 
@@ -232,5 +234,9 @@ internal class CameraController: NSObject {
         if self.currentCamera == nil {
             self.currentCamera = self.backCamera
         }
+    }
+
+    deinit {
+        print("CameraController destroyed")
     }
 }
