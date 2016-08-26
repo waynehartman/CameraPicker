@@ -1,0 +1,10 @@
+/* 
+  Localizable.strings
+  Camera Picker
+
+  Created by Wayne Hartman on 8/21/16.
+  Copyright © 2016 Wayne Hartman. All rights reserved.
+*/
+
+"PICKER_ITEM_CAMERA"        = "Camera";
+"PICKER_ITEM_PHOTO_LIBRARY" = "Fotobibliotheek";

@@ -65,6 +65,14 @@
 		B0BDDA6E1D68A88D006282CF /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		B0BDDA701D68A88D006282CF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B0BF07C21D6E909000451993 /* CameraPickerViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraPickerViewController.swift; sourceTree = "<group>"; };
+		B0BF07E11D6FCF3F00451993 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
+		B0BF07E21D6FCF4700451993 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
+		B0BF07E31D6FCF5500451993 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		B0BF07E41D6FCF5B00451993 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		B0BF07E51D6FCF6100451993 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Localizable.strings; sourceTree = "<group>"; };
+		B0BF07E61D6FCF6A00451993 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
+		B0BF07E71D6FCF8600451993 /* ko */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ko; path = ko.lproj/Localizable.strings; sourceTree = "<group>"; };
+		B0BF07E81D6FCF8D00451993 /* nl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = nl; path = nl.lproj/Localizable.strings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -221,6 +229,14 @@
 			knownRegions = (
 				en,
 				Base,
+				de,
+				es,
+				"zh-Hans",
+				"zh-Hant",
+				ja,
+				ru,
+				ko,
+				nl,
 			);
 			mainGroup = B0AD5E1E1D63F505004FDA69;
 			productRefGroup = B0AD5E281D63F505004FDA69 /* Products */;
@@ -292,6 +308,14 @@
 			children = (
 				B04BFA031D69EE75003791FD /* Base */,
 				B04BFA051D69EE7A003791FD /* en */,
+				B0BF07E11D6FCF3F00451993 /* de */,
+				B0BF07E21D6FCF4700451993 /* es */,
+				B0BF07E31D6FCF5500451993 /* zh-Hans */,
+				B0BF07E41D6FCF5B00451993 /* zh-Hant */,
+				B0BF07E51D6FCF6100451993 /* ja */,
+				B0BF07E61D6FCF6A00451993 /* ru */,
+				B0BF07E71D6FCF8600451993 /* ko */,
+				B0BF07E81D6FCF8D00451993 /* nl */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
@@ -319,6 +343,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
@@ -367,6 +392,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
