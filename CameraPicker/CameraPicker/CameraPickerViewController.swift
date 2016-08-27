@@ -160,7 +160,7 @@ extension CameraPickerViewController : UIViewControllerAnimatedTransitioning {
             swap(&dismissStartRect, &dismissEndRect)
             swap(&pickerStartTranslation, &pickerEndTranslation)
         }
-        
+
         self.view.layoutIfNeeded() // Get everything laid out the way it needs to be before making transforms
         self.isTransitioning = true
 

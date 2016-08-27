@@ -99,7 +99,12 @@ internal class CameraTakerView : UIView {
         let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(didTap(sender:)))
         self.addGestureRecognizer(tapRecognizer)
     }
-    
+
+    required init?(coder aDecoder: NSCoder) {
+        self.isManualLayout = false
+        super.init(coder: aDecoder)
+    }
+
     deinit {
         print("CameraTakerView destroyed")
     }
@@ -139,10 +144,11 @@ internal class CameraTakerView : UIView {
 
         super.layoutSubviews()
     }
+    
+    override internal func didMoveToWindow() {
+        super.didMoveToWindow()
 
-    required init?(coder aDecoder: NSCoder) {
-        self.isManualLayout = false
-        super.init(coder: aDecoder)
+        self.cameraController.startCamera()
     }
 
     @objc private func takePicture(sender: Any) {

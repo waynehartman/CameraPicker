@@ -214,7 +214,6 @@ public class CameraPickerView : UIView {
     private var isCameraAvailable = false
     private var photoSize = CGSize(width: 200.0, height: 200.0)
     private var hasPerformedInitialOffset = false
-    private var visualEffectView = UIVisualEffectView(effect: UIBlurEffect(style: .dark))
 
     required public init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
@@ -241,7 +240,6 @@ public class CameraPickerView : UIView {
         }
 
         self.collectionView.frame = self.bounds
-        self.visualEffectView.frame = self.bounds
 
         if !self.hasPerformedInitialOffset {
             self.hasPerformedInitialOffset = true
@@ -294,8 +292,7 @@ public class CameraPickerView : UIView {
 
     // MARK: Private Methods
     private func commonInit() {
-        self.addSubview(self.visualEffectView)
-        self.backgroundColor = UIColor.clear
+        self.backgroundColor = UIColor.init(white: 0.8, alpha: 1.0)
         self.registerCells()
         self.isCameraAvailable = self.isCameraAccessible()
 

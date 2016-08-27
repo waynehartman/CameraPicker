@@ -41,12 +41,14 @@ internal class CameraController: NSObject {
         
         NotificationCenter.default.addObserver(self, selector: #selector(updateDevices), name: NSNotification.Name.AVCaptureDeviceWasConnected, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(deviceRotationDidChange), name: NSNotification.Name.UIDeviceOrientationDidChange, object: nil)
+    }
 
-        defer {
+    internal func startCamera() {
+        if !self.session.isRunning {
             self.session.startRunning()
         }
     }
-    
+
     // MARK: Internal Methods
     internal func takePhoto(completion: CameraControllerCaptureHandler) {
         let connection = self.stillImageOutput.connection(withMediaType: AVMediaTypeVideo)
