@@ -21,17 +21,17 @@ public class PickerItem {
     let image: UIImage?
     let selectionHandler: PickerItemSelectionHandler
 
-    public init(title: String, image: UIImage?, selectionHandler: PickerItemSelectionHandler) {
+    public init(title: String, image: UIImage?, selectionHandler: @escaping PickerItemSelectionHandler) {
         self.title = title
         self.image = image
         self.selectionHandler = selectionHandler
     }
 
-    convenience public init(title: String, selectionHandler: PickerItemSelectionHandler) {
+    convenience public init(title: String, selectionHandler: @escaping PickerItemSelectionHandler) {
         self.init(title: title, image: nil, selectionHandler: selectionHandler)
     }
     
-    static public func cameraPickerItem(selectionHandler: PickerItemSelectionHandler) -> PickerItem {
+    static public func cameraPickerItem(selectionHandler: @escaping PickerItemSelectionHandler) -> PickerItem {
         let bundle = Bundle.init(for: self)
         let image = UIImage(named: "camera", in: bundle, compatibleWith: nil)
 
@@ -39,7 +39,7 @@ public class PickerItem {
         return PickerItem(title: title, image: image, selectionHandler: selectionHandler)
     }
     
-    static public func photoLibraryPickerItem(selectionHandler: PickerItemSelectionHandler) -> PickerItem {
+    static public func photoLibraryPickerItem(selectionHandler: @escaping PickerItemSelectionHandler) -> PickerItem {
         let bundle = Bundle.init(for: self)
         let image = UIImage(named: "photoLibrary", in: bundle, compatibleWith: nil)
         let title = NSLocalizedString("PICKER_ITEM_PHOTO_LIBRARY", tableName: nil, bundle: bundle, value: "", comment: "Photo Library")

@@ -50,7 +50,7 @@ internal class CameraController: NSObject {
     }
 
     // MARK: Internal Methods
-    internal func takePhoto(completion: CameraControllerCaptureHandler) {
+    internal func takePhoto(completion: @escaping CameraControllerCaptureHandler) {
         let connection = self.stillImageOutput.connection(withMediaType: AVMediaTypeVideo)
         let deviceOrientation = UIDevice.current.orientation
 
