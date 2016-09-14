@@ -89,6 +89,10 @@ public class CameraPickerViewController : UIViewController {
                                      width: self.view.frame.size.width,
                                      height: pickerHeight)
             self.pickerView.frame = pickerFrame
+            let orientation = UIApplication.shared.statusBarOrientation
+            let isPortrait = UIInterfaceOrientationIsPortrait(orientation)
+
+            self.pickerView.orientation = isPortrait ? .portrait : .landscape
             
             let dismissFrame = CGRect(x: CGFloat(0.0),
                                       y: CGFloat(0.0),

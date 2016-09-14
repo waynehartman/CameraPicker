@@ -47,6 +47,9 @@ internal class CameraController: NSObject {
         if !self.session.isRunning {
             self.session.startRunning()
         }
+
+        // Get the camera updated to the correct orientation
+        self.deviceRotationDidChange()
     }
 
     // MARK: Internal Methods

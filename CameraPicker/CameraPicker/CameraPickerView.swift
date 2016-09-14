@@ -223,6 +223,11 @@ fileprivate class PickerItemIndicatorView : UICollectionReusableView {
 /* ------------------------------------------------------------------------------------------------ */
 // MARK:
 
+public enum CameraPickerViewOrientation {
+    case landscape
+    case portrait
+}
+
 public class CameraPickerView : UIView {
     // MARK: Properties
     public var pickerItems = [PickerItem]() {
@@ -231,7 +236,8 @@ public class CameraPickerView : UIView {
         }
     }
     public var imageSelectionHandler: CameraPickerImageSelectionHandler?
-    
+    public var orientation = CameraPickerViewOrientation.portrait
+
     fileprivate var collectionView: UICollectionView!
     fileprivate var photos = PHFetchResult<PHAsset>()
     weak fileprivate var cameraTakerView: CameraTakerView?
@@ -540,16 +546,18 @@ extension CameraPickerView : UICollectionViewDelegateFlowLayout {
             let computedHeight = floor(cvHeight - combinedInsets - Double(itemSpacing) - lineSpacing)
             var ratio = 0.820 // Our sensible, magic number default
 
+            let isPortrait = self.orientation == .portrait
+
             if let cameraTakerView = self.cameraTakerView {
                 let intrinsicSize = cameraTakerView.intrinsicContentSize
-
-                let isPortrait = UIDeviceOrientationIsPortrait(UIDevice.current.orientation)
 
                 if isPortrait {
                     ratio = Double(intrinsicSize.height) / Double(intrinsicSize.width)
                 } else {
                     ratio = Double(intrinsicSize.width) / Double(intrinsicSize.height)
                 }
+            } else {
+                ratio = isPortrait ? ratio : 1.0 / ratio
             }
 
             let width = ceil(ratio * Double(computedHeight))
