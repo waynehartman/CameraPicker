@@ -174,29 +174,56 @@ fileprivate class PhotoCell : UICollectionViewCell {
 
 fileprivate class CameraCell : UICollectionViewCell {
     fileprivate let cameraTaker: CameraTakerView
+    private let indicatorView: PickerItemIndicatorView
+    var indicatorProgress = 1.0 {
+        willSet {
+            guard newValue != self.indicatorProgress else {
+                return
+            }
+            
+            self.setNeedsLayout()
+        }
+
+        didSet {
+            if self.indicatorProgress > 1.0 {
+                self.indicatorProgress = 1.0
+            } else if self.indicatorProgress < 0.0 {
+                self.indicatorProgress = 0.0
+            }
+        }
+    }
+    private let indicatorWidth = 20.0
 
     override init(frame: CGRect) {
-        self.cameraTaker = CameraTakerView(frame: CGRect(x: 0.0, y: 0.0, width: frame.size.width, height: frame.size.height))
+        self.cameraTaker = CameraTakerView(frame: CGRect(x: 0.0, y: 0.0, width: frame.width, height: frame.height))
+        self.indicatorView = PickerItemIndicatorView(frame: CGRect(x: 0.0, y: 0.0, width: 20.0, height: frame.height))
         super.init(frame: frame)
 
+        self.contentView.addSubview(self.indicatorView)
         self.contentView.addSubview(self.cameraTaker)
     }
-    
+
     required init?(coder aDecoder: NSCoder) {
         self.cameraTaker = CameraTakerView(frame: CGRect(x: 0.0, y: 0.0, width: 20.0, height: 20.0))
+        self.indicatorView = PickerItemIndicatorView(frame: CGRect(x: 0.0, y: 0.0, width: 20.0, height: 100.0))
         super.init(coder: aDecoder)
     }
-    
+
     override func layoutSubviews() {
         super.layoutSubviews()
 
         self.cameraTaker.frame = self.bounds
+
+        let indicatorWidth = self.indicatorWidth
+        let fullyOpen = -indicatorWidth
+        self.indicatorView.frame = CGRect(x:fullyOpen * self.indicatorProgress, y:0.0, width:indicatorWidth, height:Double(self.frame.height))
+        self.indicatorView.alpha = CGFloat(self.indicatorProgress)
     }
 }
 
-fileprivate class PickerItemIndicatorView : UICollectionReusableView {
+fileprivate class PickerItemIndicatorView : UIView {
     var chevron: UIImageView!
-    
+
     override init(frame: CGRect) {
         super.init(frame: frame)
     }
@@ -241,6 +268,7 @@ public class CameraPickerView : UIView {
     fileprivate var collectionView: UICollectionView!
     fileprivate var photos = PHFetchResult<PHAsset>()
     weak fileprivate var cameraTakerView: CameraTakerView?
+    weak fileprivate var cameraCell: CameraCell?
 
     private var isCameraAvailable = false
     private var photoSize = CGSize(width: 200.0, height: 200.0)
@@ -419,6 +447,30 @@ extension CameraPickerView: UICollectionViewDelegate {
             }
         }
     }
+    
+    public func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        if let cameraCell = self.cameraCell {
+            let xOffset = Double(scrollView.contentOffset.x)
+            let cameraOrigin = Double(cameraCell.frame.origin.x)
+
+            var progress = 0.0
+
+            if xOffset < cameraOrigin {
+                progress = xOffset / cameraOrigin
+            } else if cameraCell.indicatorProgress > 1.0 {
+                progress = 1.0
+            } else {
+                progress = 0.0
+            }
+            
+            if (progress < 0.0) {
+                progress = 0.0
+            }
+
+            cameraCell.indicatorProgress = progress
+        }
+    }
+
 }
 
 /* ------------------------------------------------------------------------------------------------ */
@@ -471,6 +523,7 @@ extension CameraPickerView : UICollectionViewDataSource {
                 }
             }
 
+            self.cameraCell = cameraCell
             self.cameraTakerView = cameraCell.cameraTaker
 
             return cameraCell
@@ -479,35 +532,6 @@ extension CameraPickerView : UICollectionViewDataSource {
             photoCell.asset = self.photos[indexPath.item]
 
             return photoCell
-        }
-    }
-
-    public func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
-        let pickerSection = CameraPickerSection.init(rawValue: indexPath.section)!
-        
-        switch pickerSection {
-        case .camera:
-            let reuseId = CameraPickerCellIdentifiers.camera.rawValue
-            let indicatorView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: reuseId, for: indexPath) as! PickerItemIndicatorView
-
-            return indicatorView
-        default:
-            let reuseId = CameraPickerCellIdentifiers.pickerItems.rawValue
-            let indicatorView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: reuseId, for: indexPath)
-            indicatorView.backgroundColor = UIColor.clear
-            
-            return indicatorView
-        }
-    }
-    
-    public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
-        let pickerSection = CameraPickerSection.init(rawValue: section)!
-
-        switch pickerSection {
-        case .camera:
-            return CGSize(width: 20.0, height: collectionView.frame.height)
-        default:
-            return CGSize(width: 0.0, height: 0.0)
         }
     }
 }
