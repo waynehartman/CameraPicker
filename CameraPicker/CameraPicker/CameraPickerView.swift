@@ -194,6 +194,31 @@ fileprivate class CameraCell : UICollectionViewCell {
     }
 }
 
+fileprivate class PickerItemIndicatorView : UICollectionReusableView {
+    var chevron: UIImageView!
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+    }
+
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+    }
+
+    override fileprivate func layoutSubviews() {
+        super.layoutSubviews()
+
+        if chevron == nil {
+            let bundle = Bundle(for: PickerItemIndicatorView.self)
+            chevron = UIImageView(image: UIImage(named: "chevron", in: bundle, compatibleWith: nil)!)
+
+            self.addSubview(chevron)
+        }
+
+        self.chevron.center = CGPoint(x: self.frame.width * 0.5, y: self.frame.height * 0.5)
+    }
+}
+
 // MARK:
 /* ------------------------------------------------------------------------------------------------ */
 // MARK:
@@ -250,8 +275,9 @@ public class CameraPickerView : UIView {
                 self.collectionView.scrollToItem(at: cameraIndexPath, at: .left, animated: false)
 
                 var offset = self.collectionView.contentOffset
+                let indicatorWidth: CGFloat = 20.0
                 let margin: CGFloat = 2.0
-                offset = CGPoint(x: offset.x - margin , y: offset.y)
+                offset = CGPoint(x: offset.x - margin - indicatorWidth , y: offset.y)
 
                 self.collectionView.contentOffset = offset
             }
@@ -334,6 +360,8 @@ public class CameraPickerView : UIView {
         self.collectionView.register(PickerItemCell.self, forCellWithReuseIdentifier: CameraPickerCellIdentifiers.pickerItems.rawValue)
         self.collectionView.register(CameraCell.self, forCellWithReuseIdentifier: CameraPickerCellIdentifiers.camera.rawValue)
         self.collectionView.register(PhotoCell.self, forCellWithReuseIdentifier: CameraPickerCellIdentifiers.photoLibrary.rawValue)
+        self.collectionView.register(PickerItemIndicatorView.self, forSupplementaryViewOfKind: UICollectionElementKindSectionHeader, withReuseIdentifier: CameraPickerCellIdentifiers.camera.rawValue)
+        self.collectionView.register(UICollectionReusableView.self, forSupplementaryViewOfKind: UICollectionElementKindSectionHeader, withReuseIdentifier: CameraPickerCellIdentifiers.pickerItems.rawValue)
     }
     
     @objc func applicationDidBecomeActive() {
@@ -445,6 +473,35 @@ extension CameraPickerView : UICollectionViewDataSource {
             photoCell.asset = self.photos[indexPath.item]
 
             return photoCell
+        }
+    }
+
+    public func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
+        let pickerSection = CameraPickerSection.init(rawValue: indexPath.section)!
+        
+        switch pickerSection {
+        case .camera:
+            let reuseId = CameraPickerCellIdentifiers.camera.rawValue
+            let indicatorView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: reuseId, for: indexPath) as! PickerItemIndicatorView
+
+            return indicatorView
+        default:
+            let reuseId = CameraPickerCellIdentifiers.pickerItems.rawValue
+            let indicatorView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: reuseId, for: indexPath)
+            indicatorView.backgroundColor = UIColor.clear
+            
+            return indicatorView
+        }
+    }
+    
+    public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
+        let pickerSection = CameraPickerSection.init(rawValue: section)!
+
+        switch pickerSection {
+        case .camera:
+            return CGSize(width: 20.0, height: collectionView.frame.height)
+        default:
+            return CGSize(width: 0.0, height: 0.0)
         }
     }
 }
