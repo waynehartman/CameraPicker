@@ -16,7 +16,7 @@ public typealias CameraPickerImageSelectionHandler = (UIImage?) -> (Void)
 // MARK:
 // MARK:
 
-public class PickerItem {
+@objc public class PickerItem : NSObject {
     let title: String
     let image: UIImage?
     let selectionHandler: PickerItemSelectionHandler

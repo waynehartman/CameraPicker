@@ -33,6 +33,7 @@ public class CameraPickerViewController : UIViewController {
     fileprivate var isPresenting = true
     fileprivate var isTransitioning = false
     fileprivate var dismissView: UIView!
+    private var addedPickerItems = [PickerItem]()
 
     deinit {
         print("CameraPickerViewController destroyed")
@@ -61,6 +62,7 @@ public class CameraPickerViewController : UIViewController {
         }
 
         self.pickerView.pickerItems.append(contentsOf: [cameraPickerItem, photoPickerItem])
+        self.pickerView.pickerItems.insert(contentsOf: self.addedPickerItems, at: 0)
         self.pickerView.imageSelectionHandler = {(image: UIImage?) in
             if let imageHandler = weakSelf?.imageSelectionHandler {
                 weakSelf?.presentingViewController?.dismiss(animated: true, completion: {
@@ -100,8 +102,16 @@ public class CameraPickerViewController : UIViewController {
                                       height: self.view.frame.size.height - self.pickerView.frame.size.height)
             self.dismissView.frame = dismissFrame
         }
-        
+
         super.viewWillLayoutSubviews()
+    }
+
+    public func add(pickerItem: PickerItem) {
+        if self.isViewLoaded {
+            self.pickerView.pickerItems.insert(pickerItem, at: 0);
+        } else {
+            self.addedPickerItems.insert(pickerItem, at: 0)
+        }
     }
 
     //MARK:
