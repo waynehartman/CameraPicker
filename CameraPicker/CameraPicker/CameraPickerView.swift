@@ -255,6 +255,11 @@ public enum CameraPickerViewOrientation {
     case portrait
 }
 
+@objc public enum CameraPickerAppearance : Int {
+    case normal = 0
+    case dark = 1
+}
+
 public class CameraPickerView : UIView {
     // MARK: Properties
     public var pickerItems = [PickerItem]() {
@@ -264,6 +269,11 @@ public class CameraPickerView : UIView {
     }
     public var imageSelectionHandler: CameraPickerImageSelectionHandler?
     public var orientation = CameraPickerViewOrientation.portrait
+    public var appearance = CameraPickerAppearance.normal {
+        didSet {
+            self.backgroundColor = self.appearance == .normal ? self.normalBackgroundColor : self.darkBackgroundColor
+        }
+    }
 
     fileprivate var collectionView: UICollectionView!
     fileprivate var photos = PHFetchResult<PHAsset>()
@@ -273,6 +283,8 @@ public class CameraPickerView : UIView {
     private var isCameraAvailable = false
     private var photoSize = CGSize(width: 200.0, height: 200.0)
     private var hasPerformedInitialOffset = false
+    private let normalBackgroundColor = UIColor.init(white: 0.8, alpha: 1.0)
+    private let darkBackgroundColor = UIColor.init(white: 0.2, alpha: 1.0);
 
     required public init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
@@ -352,7 +364,7 @@ public class CameraPickerView : UIView {
 
     // MARK: Private Methods
     private func commonInit() {
-        self.backgroundColor = UIColor.init(white: 0.8, alpha: 1.0)
+        self.backgroundColor = self.appearance == .normal ? self.normalBackgroundColor : self.darkBackgroundColor
         self.registerCells()
         self.isCameraAvailable = self.isCameraAccessible()
 
@@ -396,6 +408,10 @@ public class CameraPickerView : UIView {
         self.collectionView.register(PhotoCell.self, forCellWithReuseIdentifier: CameraPickerCellIdentifiers.photoLibrary.rawValue)
         self.collectionView.register(PickerItemIndicatorView.self, forSupplementaryViewOfKind: UICollectionElementKindSectionHeader, withReuseIdentifier: CameraPickerCellIdentifiers.camera.rawValue)
         self.collectionView.register(UICollectionReusableView.self, forSupplementaryViewOfKind: UICollectionElementKindSectionHeader, withReuseIdentifier: CameraPickerCellIdentifiers.pickerItems.rawValue)
+    }
+    
+    private func updateAppearance() {
+        
     }
     
     @objc func applicationDidBecomeActive() {
@@ -508,7 +524,7 @@ extension CameraPickerView : UICollectionViewDataSource {
         case .pickerItems:
             let pickerItemCell = collectionView.dequeueReusableCell(withReuseIdentifier: CameraPickerCellIdentifiers.pickerItems.rawValue, for: indexPath) as! PickerItemCell
             pickerItemCell.pickerItem = self.pickerItems[indexPath.item]
-            pickerItemCell.backgroundColor = UIColor.white
+            pickerItemCell.backgroundColor = self.appearance == .normal ? UIColor.white : UIColor.lightGray
             pickerItemCell.layer.cornerRadius = 10.0
             pickerItemCell.clipsToBounds = true
 
@@ -522,6 +538,7 @@ extension CameraPickerView : UICollectionViewDataSource {
                     handler(image)
                 }
             }
+            cameraCell.tintColor = self.appearance == .normal ? UIColor.darkGray : UIColor.lightGray
 
             self.cameraCell = cameraCell
             self.cameraTakerView = cameraCell.cameraTaker

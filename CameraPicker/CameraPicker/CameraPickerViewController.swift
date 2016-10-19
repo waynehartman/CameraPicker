@@ -13,6 +13,11 @@ public typealias CameraPickerViewControllerCancelHandler = (Void) -> (Void)
 public class CameraPickerViewController : UIViewController {
     public var cancelHandler: CameraPickerViewControllerCancelHandler?
     public var imageSelectionHandler: CameraPickerImageSelectionHandler?
+    public var appearance = CameraPickerAppearance.normal {
+        didSet {
+            self.pickerView.appearance = self.appearance
+        }
+    }
 
     override public var modalPresentationStyle: UIModalPresentationStyle {
         get {
@@ -34,6 +39,7 @@ public class CameraPickerViewController : UIViewController {
     fileprivate var isTransitioning = false
     fileprivate var dismissView: UIView!
     private var addedPickerItems = [PickerItem]()
+    
 
     deinit {
         print("CameraPickerViewController destroyed")
