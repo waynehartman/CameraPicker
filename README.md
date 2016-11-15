@@ -25,7 +25,18 @@ There is a self-contained view controller class `CameraPickerViewController` tha
         weakSelf?.imageView.image = image
     }
 
-    self.present(cameraPickerVC, animated: true, completion: nil) 
+    self.present(cameraPickerVC, animated: true, completion: nil)
+    
+Objective-C Example:
+
+	__weak typeof(self) weakSelf = self;
+
+    CameraPickerViewController *cameraPicker = [[CameraPickerViewController alloc] init];
+    cameraPicker.imageSelectionHandler = ^(UIImage *image) {
+        weakSelf.imageView.image = image;
+    };
+
+    [self presentViewController:cameraPicker animated:YES completion:NULL];
 
 It’s really that easy.  If you want more control over the presentation of the CameraPicker, feel free to create your own view controller and handle that in a way that makes sense for your application: everything has been modularized for flexibility.
 
