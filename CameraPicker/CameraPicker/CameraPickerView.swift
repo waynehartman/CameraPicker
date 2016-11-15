@@ -172,14 +172,18 @@ fileprivate class PhotoCell : UICollectionViewCell {
             let scale = UIScreen.main.scale
             let imageViewSize = self.imageView.frame.size
             let size = CGSize(width: imageViewSize.width * scale, height: imageViewSize.height * scale)
-            let photoId = self.asset!.localIdentifier
+            let photoId = asset.localIdentifier
             self.imageView.image = nil
 
             weak var weakSelf = self
 
             PHImageManager.default().requestImage(for: asset, targetSize: size, contentMode: .aspectFill, options: options) { result, info in
-                if result != nil && weakSelf?.asset!.localIdentifier == photoId {
-                    weakSelf?.imageView.image = result
+                guard let strongSelf = weakSelf, let currentLocalId = weakSelf?.asset?.localIdentifier else {
+                    return;
+                }
+
+                if photoId == currentLocalId { // Check to make sure the user hasn't scrolled onward since getting the result
+                    strongSelf.imageView.image = result;
                 }
             }
         } else {
