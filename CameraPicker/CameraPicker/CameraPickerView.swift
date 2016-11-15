@@ -14,6 +14,7 @@ public typealias PickerItemSelectionHandler = (Void) -> (Void)
 public typealias CameraPickerImageSelectionHandler = (UIImage?) -> (Void)
 
 // MARK:
+// MARK: PickerItem
 // MARK:
 
 @objc public class PickerItem : NSObject {
@@ -48,10 +49,6 @@ public typealias CameraPickerImageSelectionHandler = (UIImage?) -> (Void)
     }
 }
 
-// MARK:
-/* ------------------------------------------------------------------------------------------------ */
-// MARK:
-
 fileprivate enum CameraPickerSection : Int {
     case pickerItems = 0
     case camera
@@ -63,6 +60,10 @@ fileprivate enum CameraPickerCellIdentifiers : String {
     case camera
     case photoLibrary
 }
+
+// MARK:
+// MARK: PickerItemCell
+// MARK:
 
 fileprivate class PickerItemCell : UICollectionViewCell {
     @IBOutlet var titleLabel: UILabel!
@@ -121,6 +122,10 @@ fileprivate class PickerItemCell : UICollectionViewCell {
     }
 }
 
+// MARK:
+// MARK: PhotoCell
+// MARK:
+
 fileprivate class PhotoCell : UICollectionViewCell {
     private var imageView: UIImageView!
 
@@ -172,6 +177,10 @@ fileprivate class PhotoCell : UICollectionViewCell {
     }
 }
 
+// MARK:
+// MARK: CameraCell
+// MARK:
+
 fileprivate class CameraCell : UICollectionViewCell {
     fileprivate let cameraTaker: CameraTakerView
     private let indicatorView: PickerItemIndicatorView
@@ -221,6 +230,11 @@ fileprivate class CameraCell : UICollectionViewCell {
     }
 }
 
+// MARK:
+// MARK: PickerItemIndicatorView
+// MARK:
+
+/// This view is nothing but the chevron, indicating that there are additional items in front of the camera view
 fileprivate class PickerItemIndicatorView : UIView {
     var chevron: UIImageView!
 
@@ -260,6 +274,12 @@ public enum CameraPickerViewOrientation {
     case dark = 1
 }
 
+// MARK:
+// MARK: CameraPickerView
+// MARK:
+
+
+/// The root view that contains all of the camera and photo picking items in a single UI
 public class CameraPickerView : UIView {
     // MARK: Properties
     public var pickerItems = [PickerItem]() {
@@ -410,10 +430,6 @@ public class CameraPickerView : UIView {
         self.collectionView.register(UICollectionReusableView.self, forSupplementaryViewOfKind: UICollectionElementKindSectionHeader, withReuseIdentifier: CameraPickerCellIdentifiers.pickerItems.rawValue)
     }
     
-    private func updateAppearance() {
-        
-    }
-    
     @objc func applicationDidBecomeActive() {
         let isCameraAvailable = self.isCameraAccessible()
 
@@ -437,6 +453,10 @@ public class CameraPickerView : UIView {
 }
 
 /* ------------------------------------------------------------------------------------------------ */
+
+// MARK:
+// MARK: UICollectionViewDelegate
+// MARK:
 
 extension CameraPickerView: UICollectionViewDelegate {
     public func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
@@ -490,6 +510,10 @@ extension CameraPickerView: UICollectionViewDelegate {
 }
 
 /* ------------------------------------------------------------------------------------------------ */
+
+// MARK:
+// MARK: UICollectionViewDataSource
+// MARK:
 
 extension CameraPickerView : UICollectionViewDataSource {
  
@@ -554,6 +578,10 @@ extension CameraPickerView : UICollectionViewDataSource {
 }
 
 /* ------------------------------------------------------------------------------------------------ */
+
+// MARK:
+// MARK: UICollectionViewDelegateFlowLayout
+// MARK:
 
 extension CameraPickerView : UICollectionViewDelegateFlowLayout {
     public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
@@ -649,6 +677,10 @@ extension CameraPickerView : UICollectionViewDelegateFlowLayout {
 }
 
 /* ------------------------------------------------------------------------------------------------ */
+
+// MARK: 
+// MARK: PHPhotoLibraryChangeObserver
+// MARK:
 
 extension CameraPickerView : PHPhotoLibraryChangeObserver {
     public func photoLibraryDidChange(_ changeInstance: PHChange) {

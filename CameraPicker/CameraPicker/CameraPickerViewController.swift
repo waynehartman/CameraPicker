@@ -10,7 +10,9 @@ import UIKit
 
 public typealias CameraPickerViewControllerCancelHandler = (Void) -> (Void)
 
+/// A reference UIViewController implementation for using the CameraPickerView.  If more customization is desired, please feel free to create your own UIViewController subclasses.
 public class CameraPickerViewController : UIViewController {
+    //MARK:
     public var cancelHandler: CameraPickerViewControllerCancelHandler?
     public var imageSelectionHandler: CameraPickerImageSelectionHandler?
     public var appearance = CameraPickerAppearance.normal {
@@ -19,14 +21,14 @@ public class CameraPickerViewController : UIViewController {
         }
     }
 
-    override public var modalPresentationStyle: UIModalPresentationStyle {
+    override public var modalPresentationStyle: UIModalPresentationStyle { // Overridden to enforce overCurrentContext
         get {
             return .overCurrentContext
         } set {
             self.modalPresentationStyle = .overCurrentContext
         }
     }
-    override public var transitioningDelegate: UIViewControllerTransitioningDelegate? {
+    override public var transitioningDelegate: UIViewControllerTransitioningDelegate? { // Overriden to enforce itself as the UIViewControllerTransitioningDelegate
         get {
             return self
         } set {
@@ -36,18 +38,47 @@ public class CameraPickerViewController : UIViewController {
 
     fileprivate var pickerView = CameraPickerView(frame: CGRect(x: 0.0, y: 0.0, width: 200.0, height: 253.0))
     fileprivate var isPresenting = true
-    fileprivate var isTransitioning = false
+    fileprivate var isTransitioning = false // If we do manual layout during presentations, we get strange layout issues.  This flag prevents layouts during transitions.
     fileprivate var dismissView: UIView!
-    private var addedPickerItems = [PickerItem]()
+    fileprivate var addedPickerItems = [PickerItem]()
     
-
-    deinit {
+    deinit { // For debug purposes only
         print("CameraPickerViewController destroyed")
     }
+}
 
+//MARK:
+//MARK: Private Methods
+//MARK:
+
+extension CameraPickerViewController {
+    @objc fileprivate func didTapDismissView(sender: Any) {
+        self.presentingViewController!.dismiss(animated: true, completion: self.cancelHandler)
+    }
+}
+
+//MARK:
+//MARK: Public Instance Methods
+//MARK:
+
+extension CameraPickerViewController {
+    public func addPickerItem(_ pickerItem: PickerItem) {
+        if self.isViewLoaded {
+            self.pickerView.pickerItems.insert(pickerItem, at: 0);
+        } else {
+            self.addedPickerItems.insert(pickerItem, at: 0)
+        }
+    }
+}
+
+//MARK:
+//MARK: Super overrides
+//MARK:
+
+extension CameraPickerViewController {
     override public func viewDidLoad() {
         super.viewDidLoad()
-
+        
         weak var weakSelf = self
         
         let cameraPickerItem = PickerItem.cameraPickerItem {
@@ -55,7 +86,7 @@ public class CameraPickerViewController : UIViewController {
             cameraPicker.sourceType = UIImagePickerControllerSourceType.camera
             cameraPicker.cameraCaptureMode = .photo
             cameraPicker.delegate = weakSelf
-
+            
             weakSelf?.present(cameraPicker, animated: true, completion: nil)
         }
         
@@ -63,10 +94,10 @@ public class CameraPickerViewController : UIViewController {
             let cameraPicker = UIImagePickerController()
             cameraPicker.sourceType = UIImagePickerControllerSourceType.photoLibrary
             cameraPicker.delegate = weakSelf
-
+            
             weakSelf?.present(cameraPicker, animated: true, completion: nil)
         }
-
+        
         self.pickerView.pickerItems.append(contentsOf: [cameraPickerItem, photoPickerItem])
         self.pickerView.pickerItems.insert(contentsOf: self.addedPickerItems, at: 0)
         self.pickerView.imageSelectionHandler = {(image: UIImage?) in
@@ -76,19 +107,19 @@ public class CameraPickerViewController : UIViewController {
                 })
             }
         }
-
+        
         self.view.translatesAutoresizingMaskIntoConstraints = true
         self.view.addSubview(self.pickerView)
-
+        
         let dismissView = UIView(frame: CGRect(x: 0.0, y: 0.0, width: 200.0, height: 100.0))
         dismissView.backgroundColor = UIColor.black.withAlphaComponent(0.5)
         let dismissGesture = UITapGestureRecognizer(target: self, action: #selector(didTapDismissView(sender:)))
         dismissView.addGestureRecognizer(dismissGesture)
         self.dismissView = dismissView
-
+        
         self.view.addSubview(self.dismissView)
     }
-
+    
     override public func viewWillLayoutSubviews() {
         if !isTransitioning {
             let pickerHeight: CGFloat = 253.0
@@ -99,7 +130,7 @@ public class CameraPickerViewController : UIViewController {
             self.pickerView.frame = pickerFrame
             let orientation = UIApplication.shared.statusBarOrientation
             let isPortrait = UIInterfaceOrientationIsPortrait(orientation)
-
+            
             self.pickerView.orientation = isPortrait ? .portrait : .landscape
             
             let dismissFrame = CGRect(x: CGFloat(0.0),
@@ -108,26 +139,14 @@ public class CameraPickerViewController : UIViewController {
                                       height: self.view.frame.size.height - self.pickerView.frame.size.height)
             self.dismissView.frame = dismissFrame
         }
-
+        
         super.viewWillLayoutSubviews()
     }
-
-    public func add(pickerItem: PickerItem) {
-        if self.isViewLoaded {
-            self.pickerView.pickerItems.insert(pickerItem, at: 0);
-        } else {
-            self.addedPickerItems.insert(pickerItem, at: 0)
-        }
-    }
-
-    //MARK:
-    //MARK: Private Methods
-    //MARK:
-
-    @objc private func didTapDismissView(sender: Any) {
-        self.presentingViewController!.dismiss(animated: true, completion: self.cancelHandler)
-    }
 }
+
+//MARK:
+//MARK: UIViewControllerTransitioningDelegate
+//MARK:
 
 extension CameraPickerViewController : UIViewControllerTransitioningDelegate {
     public func animationController(forPresented presented: UIViewController, presenting: UIViewController, source: UIViewController) -> UIViewControllerAnimatedTransitioning? {
@@ -143,6 +162,10 @@ extension CameraPickerViewController : UIViewControllerTransitioningDelegate {
         return self
     }
 }
+
+//MARK:
+//MARK: UIViewControllerAnimatedTransitioning
+//MARK:
 
 extension CameraPickerViewController : UIViewControllerAnimatedTransitioning {
     private func animationDuration() -> TimeInterval {
@@ -202,6 +225,10 @@ extension CameraPickerViewController : UIViewControllerAnimatedTransitioning {
         }
     }
 }
+
+//MARK:
+//MARK: UIImagePickerControllerDelegate
+//MARK:
 
 extension CameraPickerViewController : UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     public func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
