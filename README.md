@@ -8,7 +8,7 @@ It gives users a mini-camera taking control, plus the previous 50 images in thei
 
 In addition, the included view controller can be configured to allow additional picking options that may be unique to your application.  For example, Camera Picker appears in [Trip Receipts](https://itunes.apple.com/us/app/trip-receipts-simple-expense/id703187946?ls=1&mt=8) that allows users to capture images from email and iCloud:
 
-![Custom picker items](customize_example.png)
+![Custom picker items](picker_item_example.png)
 
 ## Usage 
 
