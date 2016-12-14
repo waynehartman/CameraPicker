@@ -249,15 +249,15 @@ extension CameraPickerViewController : UIImagePickerControllerDelegate, UINaviga
             image = info[UIImagePickerControllerOriginalImage] as? UIImage
         }
 
-        if let imageHandler = self.imageSelectionHandler {
-            imageHandler(image)
-        }
-
         weak var weakSelf = self
 
         picker.presentingViewController?.dismiss(animated: true) {
             if let vc = weakSelf?.presentingViewController {
-                vc.dismiss(animated: true, completion:nil)
+                vc.dismiss(animated: true, completion: { 
+                    if let imageHandler = self.imageSelectionHandler {
+                        imageHandler(image)
+                    }
+                })
             } else {
                 print("Uh oh!")
             }
