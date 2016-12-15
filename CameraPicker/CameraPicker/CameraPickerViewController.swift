@@ -202,12 +202,15 @@ extension CameraPickerViewController : UIViewControllerAnimatedTransitioning {
 
         var pickerStartTranslation = CGAffineTransform.init(translationX: CGFloat(0.0), y: self.pickerView.frame.size.height)
         var pickerEndTranslation = CGAffineTransform.identity
+        
+        var presentingVC = transitionContext.viewController(forKey: UITransitionContextViewControllerKey.to)
+        var tintAdjustmentMode = UIViewTintAdjustmentMode.automatic
 
         if self.isPresenting {
             containerView.addSubview(self.view)
+            presentingVC = transitionContext.viewController(forKey: UITransitionContextViewControllerKey.from)
+            tintAdjustmentMode = .dimmed
         }
-
-        let isPresenting = self.isPresenting
 
         if !isPresenting {
             swap(&dismissStartOpacity, &dismissEndOpacity)
@@ -226,8 +229,10 @@ extension CameraPickerViewController : UIViewControllerAnimatedTransitioning {
             self.pickerView.transform = pickerEndTranslation
             self.dismissView.alpha = dismissEndOpacity
             self.dismissView.frame = dismissEndRect
+
+            presentingVC!.view.tintAdjustmentMode = tintAdjustmentMode
         }) { (wasCancelled: Bool) in
-            if !isPresenting {
+            if !self.isPresenting {
                 self.view.removeFromSuperview()
             }
             
