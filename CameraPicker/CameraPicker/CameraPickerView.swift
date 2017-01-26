@@ -279,7 +279,7 @@ fileprivate class PickerItemIndicatorView : UIView {
 /* ------------------------------------------------------------------------------------------------ */
 // MARK:
 
-public enum CameraPickerViewOrientation {
+@objc public enum CameraPickerViewOrientation : Int {
     case landscape
     case portrait
 }
