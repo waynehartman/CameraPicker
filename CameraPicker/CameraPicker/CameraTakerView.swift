@@ -189,7 +189,7 @@ extension CameraTakerView {
             self.insertSubview(snapshot, aboveSubview: self.previewView)
             
             let perspective = CGFloat(1.0 / 500.0);
-            let angle = CGFloat(M_PI * 0.5)
+            let angle = CGFloat(Double.pi * 0.5)
             let scale = CGFloat(0.75)
             
             let scaleMatrix = CATransform3DMakeScale(scale, scale, scale)
