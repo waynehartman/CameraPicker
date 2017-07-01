@@ -19,19 +19,19 @@
 
 import UIKit
 
-public typealias CameraPickerViewControllerCancelHandler = (Void) -> (Void)
+public typealias CameraPickerViewControllerCancelHandler = () -> (Void)
 
 /// A reference UIViewController implementation for using the CameraPickerView.  If more customization is desired, please feel free to create your own UIViewController subclasses.
 public class CameraPickerViewController : UIViewController {
     //MARK:
-    public var cancelHandler: CameraPickerViewControllerCancelHandler?
-    public var imageSelectionHandler: CameraPickerImageSelectionHandler?
-    public var appearance = CameraPickerAppearance.normal {
+    @objc public var cancelHandler: CameraPickerViewControllerCancelHandler?
+    @objc public var imageSelectionHandler: CameraPickerImageSelectionHandler?
+    @objc public var appearance = CameraPickerAppearance.normal {
         didSet {
             self.pickerView.appearance = self.appearance
         }
     }
-
+    
     override public var modalPresentationStyle: UIModalPresentationStyle { // Overridden to enforce overCurrentContext
         get {
             return .overCurrentContext
@@ -46,7 +46,7 @@ public class CameraPickerViewController : UIViewController {
             self.transitioningDelegate = self
         }
     }
-
+    
     fileprivate var pickerView = CameraPickerView(frame: CGRect(x: 0.0, y: 0.0, width: 200.0, height: 253.0))
     fileprivate var isPresenting = true
     fileprivate var isTransitioning = false // If we do manual layout during presentations, we get strange layout issues.  This flag prevents layouts during transitions.
@@ -73,7 +73,7 @@ extension CameraPickerViewController {
 //MARK:
 
 extension CameraPickerViewController {
-    public func addPickerItem(_ pickerItem: PickerItem) {
+    @objc public func addPickerItem(_ pickerItem: PickerItem) {
         if self.isViewLoaded {
             self.pickerView.pickerItems.insert(pickerItem, at: 0);
         } else {
@@ -182,7 +182,7 @@ extension CameraPickerViewController : UIViewControllerAnimatedTransitioning {
     private func animationDuration() -> TimeInterval {
         return TimeInterval(0.25)
     }
-
+    
     public func transitionDuration(using transitionContext: UIViewControllerContextTransitioning?) -> TimeInterval {
         return self.animationDuration()
     }
@@ -191,7 +191,7 @@ extension CameraPickerViewController : UIViewControllerAnimatedTransitioning {
     public func animateTransition(using transitionContext: UIViewControllerContextTransitioning) {
         
         let containerView = transitionContext.containerView
-
+        
         var dismissStartOpacity: CGFloat = 0.0
         var dismissEndOpacity: CGFloat = 1.0
         var dismissStartRect = self.view.bounds
@@ -199,37 +199,37 @@ extension CameraPickerViewController : UIViewControllerAnimatedTransitioning {
                                     y: CGFloat(0.0),
                                     width: self.view.frame.size.width,
                                     height: self.view.frame.size.height - self.pickerView.frame.size.height)
-
+        
         var pickerStartTranslation = CGAffineTransform.init(translationX: CGFloat(0.0), y: self.pickerView.frame.size.height)
         var pickerEndTranslation = CGAffineTransform.identity
         
         var presentingVC = transitionContext.viewController(forKey: UITransitionContextViewControllerKey.to)
         var tintAdjustmentMode = UIViewTintAdjustmentMode.automatic
-
+        
         if self.isPresenting {
             containerView.addSubview(self.view)
             presentingVC = transitionContext.viewController(forKey: UITransitionContextViewControllerKey.from)
             tintAdjustmentMode = .dimmed
         }
-
+        
         if !isPresenting {
             swap(&dismissStartOpacity, &dismissEndOpacity)
             swap(&dismissStartRect, &dismissEndRect)
             swap(&pickerStartTranslation, &pickerEndTranslation)
         }
-
+        
         self.view.layoutIfNeeded() // Get everything laid out the way it needs to be before making transforms
         self.isTransitioning = true
-
+        
         self.dismissView.alpha = dismissStartOpacity
         self.dismissView.frame = dismissStartRect
         self.pickerView.transform = pickerStartTranslation
-
+        
         UIView.animate(withDuration: self.animationDuration(), animations: {
             self.pickerView.transform = pickerEndTranslation
             self.dismissView.alpha = dismissEndOpacity
             self.dismissView.frame = dismissEndRect
-
+            
             presentingVC!.view.tintAdjustmentMode = tintAdjustmentMode
         }) { (wasCancelled: Bool) in
             if !self.isPresenting {
@@ -249,16 +249,16 @@ extension CameraPickerViewController : UIViewControllerAnimatedTransitioning {
 extension CameraPickerViewController : UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     public func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
         var image = info[UIImagePickerControllerEditedImage] as? UIImage
-
+        
         if image == nil {
             image = info[UIImagePickerControllerOriginalImage] as? UIImage
         }
-
+        
         weak var weakSelf = self
-
+        
         picker.presentingViewController?.dismiss(animated: true) {
             if let vc = weakSelf?.presentingViewController {
-                vc.dismiss(animated: true, completion: { 
+                vc.dismiss(animated: true, completion: {
                     if let imageHandler = self.imageSelectionHandler {
                         imageHandler(image)
                     }
@@ -268,7 +268,7 @@ extension CameraPickerViewController : UIImagePickerControllerDelegate, UINaviga
             }
         }
     }
-
+    
     public func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         picker.presentingViewController?.dismiss(animated: true, completion: nil)
     }
