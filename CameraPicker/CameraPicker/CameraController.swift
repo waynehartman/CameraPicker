@@ -42,7 +42,7 @@ internal class CameraController: NSObject {
     fileprivate var backCamera: AVCaptureDevice?
     
     override init() {
-        self.session.sessionPreset = AVCaptureSessionPresetPhoto
+        self.session.sessionPreset = AVCaptureSession.Preset.photo
         self.previewLayer = AVCaptureVideoPreviewLayer(session: self.session)
         self.stillImageOutput.outputSettings = [AVVideoCodecKey: AVVideoCodecJPEG]
 
@@ -66,12 +66,12 @@ internal class CameraController: NSObject {
 
     // MARK: Internal Methods
     internal func takePhoto(completion: @escaping CameraControllerCaptureHandler) {
-        let connection = self.stillImageOutput.connection(withMediaType: AVMediaTypeVideo)
+        let connection = self.stillImageOutput.connection(with: AVMediaType.video)
         let deviceOrientation = UIDevice.current.orientation
 
         weak var weakSelf = self
 
-        self.stillImageOutput.captureStillImageAsynchronously(from: connection, completionHandler:{ (sampleBuffer: CMSampleBuffer?, error: Error?) in
+        self.stillImageOutput.captureStillImageAsynchronously(from: connection!, completionHandler:{ (sampleBuffer: CMSampleBuffer?, error: Error?) in
             guard let buffer = sampleBuffer, let strongSelf = weakSelf else {
                 completion(nil, error)
                 return
@@ -101,7 +101,7 @@ internal class CameraController: NSObject {
                     imageOrientation = .right
                 }
 
-                let imageData = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(buffer) as CFData
+                let imageData = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(buffer)! as CFData
                 let dataProvider = CGDataProvider(data: imageData)
 
                 let cgImageRef = CGImage(jpegDataProviderSource: dataProvider!, decode: nil, shouldInterpolate: true, intent: .defaultIntent)
@@ -180,7 +180,7 @@ extension CameraController {
             connection.videoOrientation = connectionOrientation
         }
         
-        if let connection = self.stillImageOutput.connection(withMediaType: AVMediaTypeVideo) {
+        if let connection = self.stillImageOutput.connection(with: AVMediaType.video) {
             updateConnection(connection, deviceOrientation)
         }
         
@@ -209,7 +209,7 @@ extension CameraController {
                 self.session.addOutput(self.stillImageOutput)
             }
             
-            self.previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill
+            self.previewLayer.videoGravity = AVLayerVideoGravity.resizeAspectFill
             
             if let camera = self.currentCamera {
                 let dimensions = CMVideoFormatDescriptionGetDimensions(camera.activeFormat.formatDescription);
@@ -229,26 +229,19 @@ extension CameraController {
     }
     
     @objc fileprivate func updateDevices() {
-        let captureDevices = AVCaptureDevice.devices(withMediaType: AVMediaTypeVideo)
-        
-        guard let devices = captureDevices else {
-            print("No devices....")
-            return
-        }
+        let captureDevices = AVCaptureDevice.devices(for: AVMediaType.video)
         
         var frontCamera: AVCaptureDevice? = nil
         var backCamera: AVCaptureDevice? = nil
         
-        for captureDevice in devices {
-            if let device = captureDevice as? AVCaptureDevice {
-                switch device.position {
-                case .front:
-                    frontCamera = device
-                case .back:
-                    backCamera = device
-                case .unspecified:
-                    break
-                }
+        for captureDevice in captureDevices {
+            switch captureDevice.position {
+            case .front:
+                frontCamera = captureDevice
+            case .back:
+                backCamera = captureDevice
+            case .unspecified:
+                break
             }
         }
         

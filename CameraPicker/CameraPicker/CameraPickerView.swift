@@ -21,7 +21,7 @@ import UIKit
 import AVFoundation
 import Photos
 
-public typealias PickerItemSelectionHandler = (Void) -> (Void)
+public typealias PickerItemSelectionHandler = () -> (Void)
 public typealias CameraPickerImageSelectionHandler = (UIImage?) -> (Void)
 
 // MARK:
@@ -377,7 +377,7 @@ public class CameraPickerView : UIView {
     // MARK: Public Methods
     public func requestCameraAccessIfNeeded() {
         if !self.isCameraAccessible() {
-            AVCaptureDevice.requestAccess(forMediaType: AVMediaTypeVideo, completionHandler: { (grantedAccess: Bool) in
+            AVCaptureDevice.requestAccess(for: AVMediaType.video, completionHandler: { (grantedAccess: Bool) in
                 print("granted access: \(grantedAccess)")
             })
         }
@@ -409,7 +409,7 @@ public class CameraPickerView : UIView {
     
     fileprivate func isCameraAccessible() -> Bool {
         if UIImagePickerController.isSourceTypeAvailable(.camera) {
-            let status = AVCaptureDevice.authorizationStatus(forMediaType: AVMediaTypeVideo)
+            let status = AVCaptureDevice.authorizationStatus(for: AVMediaType.video)
 
             return status == .authorized
         } else {

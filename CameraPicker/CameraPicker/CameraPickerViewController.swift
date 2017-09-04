@@ -19,13 +19,13 @@
 
 import UIKit
 
-public typealias CameraPickerViewControllerCancelHandler = (Void) -> (Void)
+public typealias CameraPickerViewControllerCancelHandler = (() -> (Void))
 
 /// A reference UIViewController implementation for using the CameraPickerView.  If more customization is desired, please feel free to create your own UIViewController subclasses.
 public class CameraPickerViewController : UIViewController {
     //MARK:
     public var cancelHandler: CameraPickerViewControllerCancelHandler?
-    public var imageSelectionHandler: CameraPickerImageSelectionHandler?
+    @objc public var imageSelectionHandler: CameraPickerImageSelectionHandler?
     public var appearance = CameraPickerAppearance.normal {
         didSet {
             self.pickerView.appearance = self.appearance
