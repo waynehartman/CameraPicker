@@ -133,7 +133,7 @@ internal class CameraTakerView : UIView {
 
             let isLandscape = height < width
 
-            let takeMargin: CGFloat = 4.0
+            let takeMargin: CGFloat = self.layoutMargins.bottom * 0.5
 
             var takeX = width * 0.5
             var takeY = height - (self.takeButton.frame.size.height * 0.5) - takeMargin
@@ -161,7 +161,9 @@ internal class CameraTakerView : UIView {
     override internal func didMoveToWindow() {
         super.didMoveToWindow()
 
-        self.cameraController.startCamera()
+        DispatchQueue.main.async {
+            self.cameraController.startCamera()
+        }
     }
 }
 
