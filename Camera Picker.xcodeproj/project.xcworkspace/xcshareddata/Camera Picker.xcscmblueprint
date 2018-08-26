@@ -1,0 +1,30 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "C307F18DBB23ED986188F635AC602CCF26A83CE8",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "C307F18DBB23ED986188F635AC602CCF26A83CE8" : 9223372036854775807,
+    "4AF3D0D02B1F73EFF6840A4937E282223635B6F9" : 9223372036854775807
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "2BAABDAE-A34A-49F0-85E2-DF48CD528713",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "C307F18DBB23ED986188F635AC602CCF26A83CE8" : "CameraPicker\/",
+    "4AF3D0D02B1F73EFF6840A4937E282223635B6F9" : ".."
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "Camera Picker",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "Camera Picker.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/waynehartman.com:11443\/git\/iOS\/Receipts.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "4AF3D0D02B1F73EFF6840A4937E282223635B6F9"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/waynehartman.com:11443\/r\/Libraries\/CameraPicker.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "C307F18DBB23ED986188F635AC602CCF26A83CE8"
+    }
+  ]
+}
