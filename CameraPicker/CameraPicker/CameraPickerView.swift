@@ -461,9 +461,11 @@ public class CameraPickerView : UIView {
         fetchOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
         fetchOptions.fetchLimit = 40
 
-        let fetchResult = PHAsset.fetchAssets(with: .image, options: fetchOptions)
-        self.photos = fetchResult
-        self.collectionView.reloadData()
+        DispatchQueue.main.async {
+            let fetchResult = PHAsset.fetchAssets(with: .image, options: fetchOptions)
+            self.photos = fetchResult
+            self.collectionView.reloadData()
+        }
     }
 }
 
