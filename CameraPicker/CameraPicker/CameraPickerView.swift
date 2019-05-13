@@ -119,8 +119,8 @@ fileprivate class PickerItemCell : UICollectionViewCell {
         super.layoutSubviews()
 
         let margin = CGFloat(15.0)
-        let insets = UIEdgeInsetsMake(margin, margin, margin, margin)
-        let stackViewRect = UIEdgeInsetsInsetRect(self.bounds, insets)
+        let insets = UIEdgeInsets(top: margin, left: margin, bottom: margin, right: margin)
+        let stackViewRect = self.bounds.inset(by: insets)
 
         self.stackView.frame = stackViewRect
     }
@@ -403,7 +403,7 @@ public class CameraPickerView : UIView {
         self.registerCells()
         self.isCameraAvailable = self.isCameraAccessible()
 
-        NotificationCenter.default.addObserver(self, selector: #selector(applicationDidBecomeActive), name: NSNotification.Name.UIApplicationDidBecomeActive, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(applicationDidBecomeActive), name: UIApplication.didBecomeActiveNotification, object: nil)
         PHPhotoLibrary.shared().register(self)
     }
     
@@ -441,8 +441,8 @@ public class CameraPickerView : UIView {
         self.collectionView.register(PickerItemCell.self, forCellWithReuseIdentifier: CameraPickerCellIdentifiers.pickerItems.rawValue)
         self.collectionView.register(CameraCell.self, forCellWithReuseIdentifier: CameraPickerCellIdentifiers.camera.rawValue)
         self.collectionView.register(PhotoCell.self, forCellWithReuseIdentifier: CameraPickerCellIdentifiers.photoLibrary.rawValue)
-        self.collectionView.register(PickerItemIndicatorView.self, forSupplementaryViewOfKind: UICollectionElementKindSectionHeader, withReuseIdentifier: CameraPickerCellIdentifiers.camera.rawValue)
-        self.collectionView.register(UICollectionReusableView.self, forSupplementaryViewOfKind: UICollectionElementKindSectionHeader, withReuseIdentifier: CameraPickerCellIdentifiers.pickerItems.rawValue)
+        self.collectionView.register(PickerItemIndicatorView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: CameraPickerCellIdentifiers.camera.rawValue)
+        self.collectionView.register(UICollectionReusableView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: CameraPickerCellIdentifiers.pickerItems.rawValue)
     }
     
     @objc func applicationDidBecomeActive() {
@@ -664,7 +664,7 @@ extension CameraPickerView : UICollectionViewDelegateFlowLayout {
             inset = CGFloat(2.0)
         }
 
-        let insets = UIEdgeInsetsMake(inset, inset, inset, inset)
+        let insets = UIEdgeInsets(top: inset, left: inset, bottom: inset, right: inset)
         return insets
     }
     

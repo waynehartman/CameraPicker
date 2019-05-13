@@ -94,7 +94,7 @@ extension CameraPickerViewController {
         
         let cameraPickerItem = PickerItem.cameraPickerItem {
             let cameraPicker = UIImagePickerController()
-            cameraPicker.sourceType = UIImagePickerControllerSourceType.camera
+            cameraPicker.sourceType = UIImagePickerController.SourceType.camera
             cameraPicker.cameraCaptureMode = .photo
             cameraPicker.delegate = weakSelf
             
@@ -103,7 +103,7 @@ extension CameraPickerViewController {
         
         let photoPickerItem = PickerItem.photoLibraryPickerItem {
             let cameraPicker = UIImagePickerController()
-            cameraPicker.sourceType = UIImagePickerControllerSourceType.photoLibrary
+            cameraPicker.sourceType = UIImagePickerController.SourceType.photoLibrary
             cameraPicker.delegate = weakSelf
             
             weakSelf?.present(cameraPicker, animated: true, completion: nil)
@@ -140,7 +140,7 @@ extension CameraPickerViewController {
                                      height: pickerHeight)
             self.pickerView.frame = pickerFrame
             let orientation = UIApplication.shared.statusBarOrientation
-            let isPortrait = UIInterfaceOrientationIsPortrait(orientation)
+            let isPortrait = orientation.isPortrait
             
             self.pickerView.orientation = isPortrait ? .portrait : .landscape
             
@@ -204,7 +204,7 @@ extension CameraPickerViewController : UIViewControllerAnimatedTransitioning {
         var pickerEndTranslation = CGAffineTransform.identity
         
         var presentingVC = transitionContext.viewController(forKey: UITransitionContextViewControllerKey.to)
-        var tintAdjustmentMode = UIViewTintAdjustmentMode.automatic
+        var tintAdjustmentMode = UIView.TintAdjustmentMode.automatic
         
         if self.isPresenting {
             containerView.addSubview(self.view)
@@ -247,11 +247,12 @@ extension CameraPickerViewController : UIViewControllerAnimatedTransitioning {
 //MARK:
 
 extension CameraPickerViewController : UIImagePickerControllerDelegate, UINavigationControllerDelegate {
-    public func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
-        var image = info[UIImagePickerControllerEditedImage] as? UIImage
+    public func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        
+        var image = info[UIImagePickerController.InfoKey.editedImage] as? UIImage
         
         if image == nil {
-            image = info[UIImagePickerControllerOriginalImage] as? UIImage
+            image = info[UIImagePickerController.InfoKey.originalImage] as? UIImage
         }
         
         weak var weakSelf = self

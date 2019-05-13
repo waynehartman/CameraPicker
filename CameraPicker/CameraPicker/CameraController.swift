@@ -52,7 +52,7 @@ internal class CameraController: NSObject {
         self.connectCurrentDevice()
         
         NotificationCenter.default.addObserver(self, selector: #selector(updateDevices), name: NSNotification.Name.AVCaptureDeviceWasConnected, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(deviceRotationDidChange), name: NSNotification.Name.UIDeviceOrientationDidChange, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(deviceRotationDidChange), name: UIDevice.orientationDidChangeNotification, object: nil)
     }
 
     internal func startCamera() {
@@ -78,7 +78,7 @@ internal class CameraController: NSObject {
             }
             
             DispatchQueue.main.async(execute: {
-                var imageOrientation = UIImageOrientation.right
+                var imageOrientation = UIImage.Orientation.right
                 
                 switch (deviceOrientation) {
                 case .portrait:
@@ -241,6 +241,8 @@ extension CameraController {
             case .back:
                 backCamera = captureDevice
             case .unspecified:
+                break
+            @unknown default:
                 break
             }
         }
