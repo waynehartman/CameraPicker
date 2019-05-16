@@ -29,15 +29,30 @@ public typealias CameraPickerImageSelectionHandler = (UIImage?) -> (Void)
 // MARK:
 
 @objc public class PickerItem : NSObject {
+    @objc public enum DisplayMode : Int {
+        case normal = 0
+        case large  = 1
+    }
+    
     let title: String
     let image: UIImage?
     let selectionHandler: PickerItemSelectionHandler
+    let displayMode: DisplayMode
 
     @objc public init(title: String, image: UIImage?, selectionHandler: @escaping PickerItemSelectionHandler) {
         self.title = title
         self.image = image
         self.selectionHandler = selectionHandler
+        self.displayMode = .normal
     }
+    
+    @objc public init(title: String, image: UIImage?, displayMode: DisplayMode, selectionHandler: @escaping PickerItemSelectionHandler) {
+        self.title = title
+        self.image = image
+        self.selectionHandler = selectionHandler
+        self.displayMode = displayMode
+    }
+    
 
     convenience public init(title: String, selectionHandler: @escaping PickerItemSelectionHandler) {
         self.init(title: title, image: nil, selectionHandler: selectionHandler)
@@ -96,12 +111,14 @@ fileprivate class PickerItemCell : UICollectionViewCell {
         label.textAlignment = .center
         label.font = UIFont.systemFont(ofSize: 14.0)
         label.numberOfLines = 2
+        label.setContentHuggingPriority(.defaultHigh, for: .vertical)
 
         self.titleLabel = label
 
         let imageView = UIImageView()
         imageView.contentMode = .center
         imageView.backgroundColor = UIColor.clear
+        imageView.setContentHuggingPriority(.defaultLow, for: .vertical)
 
         self.imageView = imageView
 
@@ -117,12 +134,18 @@ fileprivate class PickerItemCell : UICollectionViewCell {
     
     override func layoutSubviews() {
         super.layoutSubviews()
+        
+        self.stackView.spacing = 5.0
+        self.stackView.distribution = .equalSpacing
 
-        let margin = CGFloat(15.0)
-        let insets = UIEdgeInsets(top: margin, left: margin, bottom: margin, right: margin)
-        let stackViewRect = self.bounds.inset(by: insets)
+        self.imageView.sizeToFit()
+        self.titleLabel.sizeToFit()
+        self.stackView.sizeToFit()
 
-        self.stackView.frame = stackViewRect
+        let fittingSize = stackView.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize)
+
+        self.stackView.frame.size = fittingSize
+        self.stackView.center = CGPoint(x: self.frame.width * 0.5, y: self.frame.height * 0.5)
     }
 
     private func updateUI() {
@@ -130,6 +153,8 @@ fileprivate class PickerItemCell : UICollectionViewCell {
         self.imageView.image = self.pickerItem?.image
 
         self.imageView.isHidden = self.pickerItem?.image == nil
+        
+        self.setNeedsLayout()
     }
 }
 
@@ -151,6 +176,8 @@ fileprivate class PhotoCell : UICollectionViewCell {
         self.imageView = UIImageView(frame: self.bounds)
         self.imageView.clipsToBounds = true
         self.imageView.contentMode = .scaleAspectFill
+        self.imageView.clipsToBounds = true
+        self.imageView.layer.cornerRadius = 3.0
         
         self.addSubview(self.imageView)
     }
@@ -345,23 +372,46 @@ public class CameraPickerView : UIView {
             self.collectionView.collectionViewLayout.invalidateLayout()
         }
 
-        self.collectionView.frame = self.bounds
+        if #available(iOS 11.0, *) {
+            self.collectionView.frame = CGRect(x: self.bounds.origin.x,
+                                               y: self.bounds.origin.y,
+                                               width: self.bounds.width,
+                                               height: self.bounds.height - self.safeAreaInsets.bottom)
+        } else { // Pre iOS 11
+            self.collectionView.frame = self.bounds
+        }
 
-        if !self.hasPerformedInitialOffset {
+        if self.hasPerformedInitialOffset == false {
             self.hasPerformedInitialOffset = true
+        }
+    }
+    
+    public func scrollToCamera() {
+        if self.isCameraAccessible() {
+            DispatchQueue.main.async {
+                UIView.animate(withDuration: 0.33, delay: 0.0, options: .curveEaseInOut, animations: {
+                    self.setNeedsLayout()
+                    self.layoutIfNeeded()
+                    
+                    self.collectionView.reloadData()
+                    
+                    let section = CameraPickerSection.camera.rawValue
+                    let cameraIndexPath = IndexPath(item: 0, section: section)
 
-            if self.isCameraAccessible() {
-                let section = CameraPickerSection.camera.rawValue
-                let cameraIndexPath = IndexPath(item: 0, section: section)
-                self.collectionView.scrollToItem(at: cameraIndexPath, at: .left, animated: false)
-
-                var offset = self.collectionView.contentOffset
-                let indicatorWidth: CGFloat = 20.0
-                let margin: CGFloat = 2.0
-                offset = CGPoint(x: offset.x - margin - indicatorWidth , y: offset.y)
-
-                self.collectionView.contentOffset = offset
+                    guard let attributes = self.collectionView.layoutAttributesForItem(at: cameraIndexPath) else {
+                        return
+                    }
+                    
+                    var offset = self.collectionView.contentOffset
+                    let indicatorWidth: CGFloat = 20.0
+                    let margin: CGFloat = 2.0
+                    offset = CGPoint(x: attributes.frame.origin.x - margin - indicatorWidth,
+                                     y: offset.y)
+                    
+                    self.collectionView.contentOffset = offset
+                }, completion: nil)
             }
+            
         }
     }
 
@@ -568,6 +618,17 @@ extension CameraPickerView : UICollectionViewDataSource {
             pickerItemCell.backgroundColor = self.appearance == .normal ? UIColor.white : UIColor.lightGray
             pickerItemCell.layer.cornerRadius = 10.0
             pickerItemCell.clipsToBounds = true
+            
+//            if pickerItemCell.backgroundView == nil {
+////                let backgroundView = UIView.init(frame: pickerItemCell.bounds)
+////                backgroundView.backgroundColor = pickerItemCell.backgroundColor
+//
+//                let selectedBackgroundView = UIView.init(frame: pickerItemCell.bounds)
+//                selectedBackgroundView.backgroundColor = pickerItemCell.backgroundColor?.withAlphaComponent(0.75)
+//
+////                pickerItemCell.backgroundView = backgroundView
+//                pickerItemCell.selectedBackgroundView = selectedBackgroundView
+//            }
 
             return pickerItemCell
         case .camera:
@@ -592,6 +653,40 @@ extension CameraPickerView : UICollectionViewDataSource {
             return photoCell
         }
     }
+    
+    public func collectionView(_ collectionView: UICollectionView, didHighlightItemAt indexPath: IndexPath) {
+        guard let cell = collectionView.cellForItem(at: indexPath) else {
+            return
+        }
+        
+        cell.backgroundColor = cell.backgroundColor?.withAlphaComponent(0.5)
+        
+        let pickerSection = CameraPickerSection.init(rawValue: indexPath.section)!
+        
+        switch pickerSection {
+        case .pickerItems:
+            cell.transform = CGAffineTransform.init(scaleX: 0.95, y: 0.95)
+        default:
+            () // DO NOTHING
+        }
+    }
+    
+    public func collectionView(_ collectionView: UICollectionView, didUnhighlightItemAt indexPath: IndexPath) {
+        guard let cell = collectionView.cellForItem(at: indexPath) else {
+            return
+        }
+        
+        cell.backgroundColor = cell.backgroundColor?.withAlphaComponent(1.0)
+        
+        let pickerSection = CameraPickerSection.init(rawValue: indexPath.section)!
+        
+        switch pickerSection {
+        case .pickerItems:
+            cell.transform = CGAffineTransform.identity
+        default:
+            () // DO NOTHING
+        }
+    }
 }
 
 /* ------------------------------------------------------------------------------------------------ */
@@ -614,9 +709,15 @@ extension CameraPickerView : UICollectionViewDelegateFlowLayout {
         switch pickerSection {
         case .pickerItems:
             let combinedInsets = Double(insets.top) + Double(insets.bottom)
-            let computedHeight = floor((cvHeight - combinedInsets - itemSpacing) * 0.5)
-            let ratio = 1.25
+            var computedHeight = floor((cvHeight - combinedInsets - itemSpacing) * 0.5)
+            let ratio = 1.4
             let computedWidth = computedHeight * ratio
+            
+            let pickerItem = self.pickerItems[indexPath.item]
+            if pickerItem.displayMode == .large {
+                // Need to add itemSpacing back in because it's full height
+                computedHeight = (computedHeight * 2.0) + itemSpacing
+            }
 
             return CGSize(width: computedWidth, height: computedHeight)
         case .photoLibrary:

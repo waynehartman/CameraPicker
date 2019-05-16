@@ -52,6 +52,7 @@ public class CameraPickerViewController : UIViewController {
     fileprivate var isTransitioning = false // If we do manual layout during presentations, we get strange layout issues.  This flag prevents layouts during transitions.
     fileprivate var dismissView: UIView!
     fileprivate var addedPickerItems = [PickerItem]()
+    fileprivate var hasDoneInitialLayout = false
     
     deinit { // For debug purposes only
         print("CameraPickerViewController destroyed")
@@ -153,6 +154,15 @@ extension CameraPickerViewController {
         
         super.viewWillLayoutSubviews()
     }
+    
+    override public func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        
+        if self.hasDoneInitialLayout == false, self.view.window != nil, self.pickerView.window != nil {
+            self.hasDoneInitialLayout = true
+            self.pickerView.scrollToCamera()
+        }
+    }
 }
 
 //MARK:
@@ -207,6 +217,7 @@ extension CameraPickerViewController : UIViewControllerAnimatedTransitioning {
         var tintAdjustmentMode = UIView.TintAdjustmentMode.automatic
         
         if self.isPresenting {
+            self.pickerView.scrollToCamera()
             containerView.addSubview(self.view)
             presentingVC = transitionContext.viewController(forKey: UITransitionContextViewControllerKey.from)
             tintAdjustmentMode = .dimmed
