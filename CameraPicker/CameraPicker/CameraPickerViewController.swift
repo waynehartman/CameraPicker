@@ -201,6 +201,7 @@ extension CameraPickerViewController : UIViewControllerAnimatedTransitioning {
     public func animateTransition(using transitionContext: UIViewControllerContextTransitioning) {
         
         let containerView = transitionContext.containerView
+        self.view.frame = containerView.bounds
         
         var dismissStartOpacity: CGFloat = 0.0
         var dismissEndOpacity: CGFloat = 1.0
