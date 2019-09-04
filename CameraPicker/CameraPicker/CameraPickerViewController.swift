@@ -54,6 +54,24 @@ public class CameraPickerViewController : UIViewController {
     fileprivate var addedPickerItems = [PickerItem]()
     fileprivate var hasDoneInitialLayout = false
     
+    public override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        
+        guard
+            let previousTraitCollection = previousTraitCollection
+        else {
+            return
+        }
+        
+        
+        
+        if #available(iOS 13.0, *) {
+            if previousTraitCollection.hasDifferentColorAppearance(comparedTo: self.traitCollection) {
+                self.appearance = self.traitCollection.userInterfaceStyle == UIUserInterfaceStyle.dark ? .dark : .normal;
+            }
+        }
+    }
+    
     deinit { // For debug purposes only
         print("CameraPickerViewController destroyed")
     }

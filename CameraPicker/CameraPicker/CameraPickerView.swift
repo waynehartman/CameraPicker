@@ -334,6 +334,10 @@ public class CameraPickerView : UIView {
     public var appearance = CameraPickerAppearance.normal {
         didSet {
             self.backgroundColor = self.appearance == .normal ? self.normalBackgroundColor : self.darkBackgroundColor
+            
+            if self.collectionView.window != nil {
+                self.collectionView.reloadData()
+            }
         }
     }
 
