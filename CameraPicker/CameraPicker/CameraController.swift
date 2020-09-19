@@ -37,14 +37,14 @@ internal class CameraController: NSObject {
 
     // Private vars
     fileprivate let session = AVCaptureSession()
-    fileprivate let stillImageOutput = AVCaptureStillImageOutput() // Update this for iOS 10...
+    fileprivate let stillImageOutput = AVCapturePhotoOutput()
     fileprivate var frontCamera: AVCaptureDevice?
     fileprivate var backCamera: AVCaptureDevice?
+    fileprivate var photoCompletionHandler: CameraControllerCaptureHandler?
     
     override init() {
         self.session.sessionPreset = AVCaptureSession.Preset.photo
         self.previewLayer = AVCaptureVideoPreviewLayer(session: self.session)
-        self.stillImageOutput.outputSettings = [AVVideoCodecKey: AVVideoCodecJPEG]
 
         super.init()
 
@@ -66,50 +66,10 @@ internal class CameraController: NSObject {
 
     // MARK: Internal Methods
     internal func takePhoto(completion: @escaping CameraControllerCaptureHandler) {
-        let connection = self.stillImageOutput.connection(with: AVMediaType.video)!
-        let deviceOrientation = UIDevice.current.orientation
+        self.photoCompletionHandler = completion
 
-        weak var weakSelf = self
-
-        self.stillImageOutput.captureStillImageAsynchronously(from: connection, completionHandler:{ (sampleBuffer: CMSampleBuffer?, error: Error?) in
-            guard let buffer = sampleBuffer, let strongSelf = weakSelf else {
-                completion(nil, error)
-                return
-            }
-            
-            DispatchQueue.main.async(execute: {
-                var imageOrientation = UIImage.Orientation.right
-                
-                switch (deviceOrientation) {
-                case .portrait:
-                    imageOrientation = .right
-                case .portraitUpsideDown:
-                    imageOrientation = .left
-                case .landscapeLeft:
-                    if strongSelf.currentCamera == strongSelf.frontCamera {
-                        imageOrientation = .down
-                    } else {
-                        imageOrientation = .up
-                    }
-                case .landscapeRight:
-                    if strongSelf.currentCamera == strongSelf.frontCamera {
-                        imageOrientation = .up
-                    } else {
-                        imageOrientation = .down
-                    }
-                default:
-                    imageOrientation = .right
-                }
-
-                let imageData = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(buffer)! as CFData
-                let dataProvider = CGDataProvider(data: imageData)
-
-                let cgImageRef = CGImage(jpegDataProviderSource: dataProvider!, decode: nil, shouldInterpolate: true, intent: .defaultIntent)
-                let image = UIImage(cgImage: cgImageRef!, scale: 1.0, orientation: imageOrientation)
-
-                completion(image, nil)
-            })
-        })
+        let photoSettings = AVCapturePhotoSettings()
+        self.stillImageOutput.capturePhoto(with: photoSettings, delegate: self)
     }
     
     internal func toggleCamera() {
@@ -221,20 +181,20 @@ extension CameraController {
     }
     
     @objc fileprivate func deviceRotationDidChange() {
-        let orientation = UIDevice.current.orientation
-        
-        print("Orientation changed: \(orientation)")
+//        let orientation = UIDevice.current.orientation
+//
+//        print("Orientation changed: \(orientation)")
         
         self.updatePreviewOrientation()
     }
     
     @objc fileprivate func updateDevices() {
-        let captureDevices = AVCaptureDevice.devices(for: AVMediaType.video)
-        
+        let discoverySession = AVCaptureDevice.DiscoverySession.init(deviceTypes: [.builtInWideAngleCamera], mediaType: .video, position: AVCaptureDevice.Position.unspecified)
+
         var frontCamera: AVCaptureDevice? = nil
         var backCamera: AVCaptureDevice? = nil
         
-        for captureDevice in captureDevices {
+        for captureDevice in discoverySession.devices {
             switch captureDevice.position {
             case .front:
                 frontCamera = captureDevice
@@ -255,4 +215,59 @@ extension CameraController {
             self.currentCamera = self.backCamera
         }
     }
+}
+
+extension CameraController: AVCapturePhotoCaptureDelegate {
+    
+    func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
+        let deviceOrientation = UIDevice.current.orientation
+        
+        guard let completion = self.photoCompletionHandler else {
+            return
+        }
+
+        if let error = error {
+            completion(nil, error)
+            
+            return
+        }
+        
+        guard let imageData = photo.fileDataRepresentation() else {
+            completion(nil, NSError(domain: "CameraPickerErrorDomain", code: 8934, userInfo: nil))
+            return
+        }
+        
+        DispatchQueue.main.async(execute: {
+            var imageOrientation = UIImage.Orientation.right
+            
+            switch (deviceOrientation) {
+                case .portrait:
+                    imageOrientation = .right
+                case .portraitUpsideDown:
+                    imageOrientation = .left
+                case .landscapeLeft:
+                    if self.currentCamera == self.frontCamera {
+                        imageOrientation = .down
+                    } else {
+                        imageOrientation = .up
+                    }
+                case .landscapeRight:
+                    if self.currentCamera == self.frontCamera {
+                        imageOrientation = .up
+                    } else {
+                        imageOrientation = .down
+                    }
+                default:
+                    imageOrientation = .right
+            }
+            
+            let dataProvider = CGDataProvider(data: imageData as CFData)
+            
+            let cgImageRef = CGImage(jpegDataProviderSource: dataProvider!, decode: nil, shouldInterpolate: true, intent: .defaultIntent)
+            let image = UIImage(cgImage: cgImageRef!, scale: 1.0, orientation: imageOrientation)
+            
+            completion(image, nil)
+        })
+    }
+    
 }
